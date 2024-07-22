@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	Title="Account Editor"
+	x:Class="TopSecret.BasePage"
+	x:Subclass="TopSecret.AccountEditor">
+	<StackLayout Margin="20">
+		<Entry IsVisible="False" Text="{Binding Record.Id}" />
+        <StackLayout Orientation="Horizontal">
+            <Label Text="&#xf02e;" FontFamily="FontAwesome" />
+            <Label Text=" Account" />
+        </StackLayout>
+		<Entry Placeholder="Account Name" Text="{Binding Record.AccountName, Mode=TwoWay}" />
+
+		<StackLayout Orientation="Horizontal">
+			<Label Text="&#xf007;" FontFamily="FontAwesome" />
+			<Label Text=" Username" />
+		</StackLayout>
+		<Entry Placeholder="User Name" Text="{Binding Record.UserName, Mode=TwoWay}" />
+
+		<StackLayout Orientation="Horizontal">
+			<Label Text="&#xf084;" FontFamily="FontAwesome" />
+			<Label Text=" Password" />
+		</StackLayout>
+		<Entry Placeholder="Password" Text="{Binding Record.Password, Mode=TwoWay}" />
+
+		<StackLayout Orientation="Horizontal">
+			<Label Text="&#xf0ac;" FontFamily="FontAwesome" />
+			<Label Text=" URL" />
+		</StackLayout>
+		<Entry Placeholder="URL" Text="{Binding Record.Url, Mode=TwoWay}" />
+		<HorizontalStackLayout>
+			<Button Padding="20" Margin="10" Command="{Binding SaveCommand}" Text="Save" />
+			<Button Padding="20" Margin="10" Command="{Binding CloneCommand}" Text="Clone" />
+			<Button Padding="20" Margin="10" Command="{Binding DeleteCommand}" Text="Delete" />
+			<Button Padding="20" Margin="10" Command="{Binding ListCommand}" Text="List" />
+		</HorizontalStackLayout>
+	</StackLayout>
+</ContentPage>

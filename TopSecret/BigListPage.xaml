@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:local="clr-namespace:TopSecret"
+			 Title="Account List"
+             x:Class="TopSecret.BigListPage">
+	<VerticalStackLayout>
+		<ScrollView VerticalOptions="Start">
+			<ListView ItemsSource="{Binding Records}" ItemTapped="OnItemTapped" HeightRequest="500" RowHeight="80" Margin="10,5,10,5">
+				<ListView.ItemTemplate>
+					<DataTemplate>
+						<ViewCell>
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+								</Grid.RowDefinitions>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="100" />
+									<ColumnDefinition Width="*" />
+								</Grid.ColumnDefinitions>
+
+								<Label Grid.Row="0" Grid.Column="0" Text="Account:" FontAttributes="Bold" HorizontalTextAlignment="Start" />
+								<Label Grid.Row="0" Grid.Column="1" Text="{Binding AccountName}" FontAttributes="Bold" HorizontalTextAlignment="End" />
+
+								<StackLayout Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
+									<Label Text="&#xf007;" FontFamily="FontAwesome" HorizontalTextAlignment="Start" />
+									<Label Text=" UserName:" FontAttributes="Bold" HorizontalTextAlignment="Start" />
+								</StackLayout>
+								<Label Grid.Row="1" Grid.Column="1" Text="{Binding UserName}" />
+
+								<StackLayout Orientation="Horizontal" Grid.Row="2" Grid.Column="0">
+									<Label Text="&#xf084;" FontFamily="FontAwesome" HorizontalTextAlignment="Start" />
+									<Label Text=" Password:" FontAttributes="Bold" HorizontalTextAlignment="Start" />
+								</StackLayout>
+								<Label Grid.Row="2" Grid.Column="1" Text="{Binding Password}" />
+							</Grid>
+						</ViewCell>
+					</DataTemplate>
+				</ListView.ItemTemplate>
+			</ListView>
+		</ScrollView>
+		<HorizontalStackLayout
+			Spacing="25"
+			Padding="20,10,10,10"
+			AbsoluteLayout.LayoutFlags="PositionProportional"
+			AbsoluteLayout.LayoutBounds="0.94,1.18,0.5,0.25"
+			HorizontalOptions="End"
+			VerticalOptions="EndAndExpand">
+			<Button
+				x:Name="btnAddNew"
+				Text="New Entry"
+				SemanticProperties.Hint="Adds a new entry"
+				Clicked="OnAddClicked"/>
+			<Button
+				x:Name="btnUpdateMaster"
+				Text="Update Master"
+				SemanticProperties.Hint="Changes master password"
+				Clicked="OnUpdateMasterClicked"/>
+			<Button
+				x:Name="btnQuit"
+				Text="Quit"
+				SemanticProperties.Hint="Game Over"
+				Clicked="OnQuitClicked"/>
+		</HorizontalStackLayout>
+		<Label x:Name="PasswordLabel" Text="New Master Password" IsVisible="False" />
+		<Entry x:Name="MasterPw" IsPassword="True" Placeholder="Password" IsVisible="False" />
+		<Button x:Name="MasterPwChangeButton" Text="Engage!" Clicked="MasterPwChangeButtonClick" IsVisible="False" MaximumWidthRequest="200" />
+	</VerticalStackLayout>
+</ContentPage>
