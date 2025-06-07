@@ -73,7 +73,7 @@ namespace TopSecret.Helpers
 			allData.Remove(match);
 			string records = SerializeAccountRecords(allData);
 
-			await new StorageHelper().SaveAsync(key: _accountDataKey, value: records).ConfigureAwait(false);
+			await new StorageHelper().SaveEncryptedAsync(key: _accountDataKey, value: records).ConfigureAwait(false);
 			return true;
 		}
 
@@ -104,7 +104,7 @@ namespace TopSecret.Helpers
 			}
 
 			string records = SerializeAccountRecords(allData);
-			await new StorageHelper().SaveAsync(key: _accountDataKey, value: records).ConfigureAwait(false);
+			await new StorageHelper().SaveEncryptedAsync(key: _accountDataKey, value: records).ConfigureAwait(false);
 			return true;
 		}
 	}

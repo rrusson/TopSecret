@@ -8,19 +8,18 @@ namespace TopSecret.Helpers
 		private readonly byte[] _salt = Encoding.ASCII.GetBytes("Enter a unique salt value here.");
 		private readonly string _uniqueKey = "Enter a unique encryption key here.";
 		private readonly string _masterPw;  // This is the master password used to open the app
+		private readonly string _deviceId;
 
 		/// <summary>
 		/// Default CTOR
 		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if master password hasn't been set</exception>
+		/// <exception cref="InvalidOperationException">Thrown if master password isn't set</exception>
 		public CryptoHelper(string? password)
 		{
-			if (string.IsNullOrWhiteSpace(password))
-			{
-				throw new InvalidOperationException("This app cannot operate without a password.");
-			}
+			ArgumentNullException.ThrowIfNull(password);
 
 			_masterPw = password;
+			_deviceId = GetDeviceId() ?? string.Empty;
 		}
 
 		/// <summary>
@@ -32,13 +31,7 @@ namespace TopSecret.Helpers
 		{
 			var plainTextBytes = Encoding.Unicode.GetBytes(plainText);
 
-			using var aes = Aes.Create();
-			string key = _masterPw + _uniqueKey;
-
-			var rfcDecoder = new Rfc2898DeriveBytes(key, _salt, 2600, HashAlgorithmName.SHA512);
-			aes.Key = rfcDecoder.GetBytes(32);
-			aes.IV = rfcDecoder.GetBytes(16);
-
+			using Aes aes = GetAes();
 			using var memoryStream = new MemoryStream();
 			using var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
 			cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
@@ -54,22 +47,73 @@ namespace TopSecret.Helpers
 		/// <returns>Readable text</returns>
 		internal string Decrypt(string cipherText)
 		{
-			var cipherTextBytes = Convert.FromBase64String(cipherText);
+			try
+			{
+				var cipherTextBytes = Convert.FromBase64String(cipherText);
 
-			using var aes = Aes.Create();
-			string key = _masterPw + _uniqueKey;
+				using Aes aes = GetAes();
+				using var memoryStream = new MemoryStream();
+				using var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Write);
+				
+				cryptoStream.Write(cipherTextBytes, 0, cipherTextBytes.Length);
+				cryptoStream.FlushFinalBlock(); // Ensure padding is properly handled
+				
+				return Encoding.Unicode.GetString(memoryStream.ToArray());
+			}
+			catch (FormatException)
+			{
+				throw new CryptographicException("Invalid Base64 string. The encrypted data may be corrupted.");
+			}
+			catch (CryptographicException ex)
+			{
+				// Preserve the original exception but add more context
+				throw new CryptographicException("Failed to decrypt data. This may be caused by using different encryption parameters or corrupted data.", ex);
+			}
+		}
 
-			var rfcDecoder = new Rfc2898DeriveBytes(key, _salt, 2600, HashAlgorithmName.SHA512);
+		/// <summary>
+		/// Creates a new AES object with a unique key
+		/// </summary>
+		private Aes GetAes()
+		{
+			Aes aes = Aes.Create();
+			string key = _uniqueKey + _masterPw + _deviceId;
+
+			var rfcDecoder = new Rfc2898DeriveBytes(key, _salt, 128_000, HashAlgorithmName.SHA512);
 			aes.Key = rfcDecoder.GetBytes(32);
 			aes.IV = rfcDecoder.GetBytes(16);
+			aes.Padding = PaddingMode.PKCS7;
 
-			using var memoryStream = new MemoryStream();
-			using var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Write);
-			
-			cryptoStream.Write(cipherTextBytes, 0, cipherTextBytes.Length);
-			cryptoStream.Close();
-			
-			return Encoding.Unicode.GetString(memoryStream.ToArray());
+			return aes;
+		}
+
+		/// <summary>
+		/// Get unique device ID to make it more difficult to crack the encryption
+		/// </summary>
+		/// <returns>Unique DeviceId</returns>
+		private static string? GetDeviceId()
+		{
+#if ANDROID
+	return Android.Provider.Settings.Secure.GetString(Platform.CurrentActivity?.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
+#elif IOS
+	return UIKit.UIDevice.CurrentDevice.IdentifierForVendor.ToString();
+#elif WINDOWS
+	return Windows.System.Profile.SystemIdentification.GetSystemIdForPublisher().Id.ToString();
+#elif WINDOWS_UWP
+	return Windows.System.Profile.SystemIdentification.GetSystemIdForPublisher().Id.ToString();
+#elif LINUX
+	return Environment.MachineName;
+#elif MACOS
+	return NSProcessInfo.ProcessInfo.HostName;
+#elif TIZEN
+	return Tizen.System.Information.DeviceId;
+#elif TVOS
+	return UIDevice.CurrentDevice.IdentifierForVendor.ToString();
+#elif WATCHOS
+	return WKInterfaceDevice.CurrentDevice.IdentifierForVendor.ToString();
+#else
+	return "UNKNOWN";
+#endif
 		}
 	}
 }

@@ -45,7 +45,7 @@ public partial class BigListPage : ContentPage
 
 		if (Records.Count == 0)
 		{
-			await PasswordManager.Instance.PopulateRecords().ConfigureAwait(true);
+			await PasswordManager.Instance.PopulateRecordsAsync().ConfigureAwait(true);
 		}
 
 		await Task.Delay(50).ConfigureAwait(true); // Small delay to ensure UI is refreshed

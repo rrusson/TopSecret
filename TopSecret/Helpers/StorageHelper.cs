@@ -58,7 +58,7 @@
 		/// </summary>
 		/// <param name="key">Key for the record</param>
 		/// <param name="value">Value to store</param>
-		internal async Task SaveAsync(string key, string value)
+		internal async Task SaveEncryptedAsync(string key, string value)
 		{
 			if (IsBusy)
 			{

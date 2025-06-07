@@ -1,4 +1,6 @@
-﻿namespace TopSecret.Helpers
+﻿using System.Security.Cryptography;
+
+namespace TopSecret.Helpers
 {
 	/// <summary>
 	/// Loads and saves master password list (core functionality of the app)
@@ -31,7 +33,6 @@
 		private PasswordManager()
 		{
 			// Private CTOR for singleton
-			//Task.Run(() => PopulateRecords());
 		}
 
 		/// <summary>
@@ -54,7 +55,7 @@
 				return false;
 			}
 
-			var match = Records.FirstOrDefault(r => r.Id == record.Id);
+			var match = Records.Find(r => r.Id == record.Id);
 
 			if (match != null)
 			{
@@ -83,7 +84,25 @@
 			}
 
 			var storage = new StorageHelper();
-			await storage.SaveAsync(_accountDataKey, serialized).ConfigureAwait(false);
+
+			bool isSaved = false;
+			while (!isSaved)
+			{
+				storage.Remove(_accountDataKey);    // Remove the old data first
+
+				// Stay on same thread until data is re-encrypted and saved
+				await storage.SaveEncryptedAsync(_accountDataKey, serialized).ConfigureAwait(true);
+
+				try
+				{
+					string? serializedGarbage = await storage.LoadAsync(_accountDataKey).ConfigureAwait(true);
+					isSaved = !string.IsNullOrWhiteSpace(serializedGarbage);
+				}
+				catch (CryptographicException)
+				{
+					throw new InvalidOperationException("Oops. The encrypted data didn't save correctly.");
+				}
+			}
 		}
 
 		/// <summary>
@@ -97,12 +116,13 @@
 				return;
 			}
 
-			// Set the app master password that'll be used to encrypt all records
+			// Set a new app master password that's used by StorageHelper to encrypt all records
 			App.SetMasterPassword(newPassword);
 			var storage = new StorageHelper();
-			await storage.SaveAsync(_masterPasswordKey, newPassword).ConfigureAwait(false);
+			// Encrypt the new master password (using the unencrypted new password) and save it
+			await storage.SaveEncryptedAsync(_masterPasswordKey, newPassword).ConfigureAwait(false);
 
-			// Encrypt the master password for encrypting everything else
+			// Now Update the app master password used for encrypting/decrypting everything else
 			var crypto = new CryptoHelper(newPassword);
 			string encrypted = crypto.Encrypt(newPassword);
 			App.SetMasterPassword(encrypted);
@@ -111,19 +131,10 @@
 			await SaveAllRecordsAsync().ConfigureAwait(true);
 		}
 
-		///// <summary>
-		///// Gets all decrypted records
-		///// </summary>
-		//internal async Task PopulateRecordsX()
-		//{
-		//	var data = await DataHelper.GetAllRecordsAsync().ConfigureAwait(true);
-		//	Records = data.ToList();
-		//}
-
 		/// <summary>
 		/// Gets all decrypted records
 		/// </summary>
-		internal async Task PopulateRecords()
+		internal async Task PopulateRecordsAsync()
 		{
 			var storage = new StorageHelper();
 			string? serializedGarbage = await storage.LoadAsync(_accountDataKey).ConfigureAwait(false);

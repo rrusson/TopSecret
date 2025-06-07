@@ -9,10 +9,6 @@
 				return false;
 			}
 
-			// We'll compare encrypted alleged password to the master password (which was also encrypted when saved)			
-			var crypto = new CryptoHelper(allegedPw);
-			var encryptedAlleged = crypto.Encrypt(allegedPw);
-
 			var masterPw = await PasswordManager.Instance.GetMasterPasswordAsync();
 
 			if (string.IsNullOrWhiteSpace(masterPw))
@@ -22,6 +18,10 @@
 				await SecureStorage.Default.SetAsync("badAttempts", "0").ConfigureAwait(false);
 				return true;
 			}
+
+			// Compare encrypted alleged password to the stored master password (which was also encrypted when saved)			
+			var crypto = new CryptoHelper(allegedPw);
+			var encryptedAlleged = crypto.Encrypt(allegedPw);
 
 			if (encryptedAlleged.Equals(masterPw, StringComparison.InvariantCulture))
 			{
