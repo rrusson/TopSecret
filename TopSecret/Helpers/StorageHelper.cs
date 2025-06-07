@@ -1,8 +1,26 @@
 ﻿namespace TopSecret.Helpers
 {
+	/// <summary>
+	/// Class to handle secure storage operations with encryption and decryption
+	/// </summary>
 	internal class StorageHelper
 	{
-		internal bool IsBusy { get; set; }
+		private int _isBusy;
+
+		/// <summary>
+		/// Thread-safe property that indicates saving/removing items is in progress
+		/// </summary>
+		internal bool IsBusy
+		{
+			get
+			{
+				return Interlocked.CompareExchange(ref _isBusy, 1, 1) == 1;
+			}
+			private set
+			{
+				Interlocked.Exchange(ref _isBusy, value ? 1 : 0);
+			}
+		}
 
 		/// <summary>
 		/// Decrypts a value from secure storage
@@ -12,26 +30,26 @@
 		{
 			if (IsBusy)
 			{
-				return null;
+				return null;	// Prevent displaying stale information if we're saving/removing items
 			}
 
-			string value = await SecureStorage.Default.GetAsync(key).ConfigureAwait(false) ?? string.Empty;
+			IsBusy = true;	// Prevent saving until we finish loading current data
+			string? value = await SecureStorage.Default.GetAsync(key).ConfigureAwait(false);
 
 			if (string.IsNullOrWhiteSpace(value))
 			{
+				IsBusy = false;
 				return null;
 			}
 
 			var crypto = new CryptoHelper(App.MasterPassword);
 			try
 			{
-				string decrypted = crypto.Decrypt(value);
-				return decrypted;
+				return crypto.Decrypt(value);
 			}
-			catch (Exception ex)
+			finally
 			{
-				Console.WriteLine($"Failed to decrypt value: {ex.Message}");
-				return null;
+				IsBusy = false;
 			}
 		}
 
@@ -44,15 +62,21 @@
 		{
 			if (IsBusy)
 			{
-				return;
+				return; // Prevent possible data corruption if we're already busy saving/removing items
 			}
 
+			IsBusy = true;  // Lock the app while saving
 			var crypto = new CryptoHelper(App.MasterPassword);
 			string encrypted = crypto.Encrypt(value);
 
-			IsBusy = true;  // Lock the app while saving
-			await SecureStorage.Default.SetAsync(key, encrypted).ConfigureAwait(false);
-			IsBusy = false;
+			try
+			{
+				await SecureStorage.Default.SetAsync(key, encrypted).ConfigureAwait(false);
+			}
+			finally
+			{
+				IsBusy = false;
+			}
 		}
 
 		/// <summary>
@@ -63,12 +87,18 @@
 		{
 			if (IsBusy)
 			{
-				return;
+				return; // Don't remove item if we're currently saving/removing items
 			}
 
-			IsBusy = true;
-			SecureStorage.Default.Remove(key);
-			IsBusy = false;
+			try
+			{
+				IsBusy = true;
+				SecureStorage.Default.Remove(key);
+			}
+			finally
+			{
+				IsBusy = false;
+			}
 		}
 	}
 }
