@@ -1,36 +1,44 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	Title="Shhh..."
-	x:Class="TopSecret.LoginPage">
-	<ScrollView>
-		<VerticalStackLayout
-			Padding="30,50,30,0"
-			Spacing="25"
-			VerticalOptions="StartAndExpand">
+<ContentPage  
+	x:Class="TopSecret.LoginPage"  
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"  
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"  
+	Title="Shhh...">  
+	<ScrollView>  
+		<Grid  
+			Padding="30,50,30,0"  
+			RowSpacing="25"  
+			VerticalOptions="Start">  
 
-			<Label x:Name="ErrorMessage" />
+			<Grid.RowDefinitions>  
+				<RowDefinition Height="Auto" />  
+				<RowDefinition Height="Auto" />  
+				<RowDefinition Height="Auto" />  
+			</Grid.RowDefinitions>  
 
-			<Entry
-				x:Name="Password"
-				BackgroundColor="AliceBlue"
-				HorizontalOptions="FillAndExpand"
-				IsPassword="True"
-				IsVisible="True"
-				Keyboard="Plain"
-				Placeholder="Password"
-				WidthRequest="200" />
+			<Label  
+				x:Name="ErrorMessage"  
+				Grid.Row="0" />  
 
-			<Button
-				x:Name="btnLogin"
-				Clicked="OpenSesame"
-				FontAttributes="Bold"
-				HorizontalOptions="Center"
-				ImageSource="top_secret_icon.png"
-				SemanticProperties.Description="Engage!"
-				SemanticProperties.Hint="This is the way." />
-		</VerticalStackLayout>
-	</ScrollView>
+			<Entry  
+				x:Name="Password"  
+				BackgroundColor="AliceBlue"  
+				IsPassword="True"  
+				IsVisible="True"  
+				Keyboard="Plain"  
+				Placeholder="Password"  
+				WidthRequest="200"  
+				Grid.Row="1" />  
 
+			<Button  
+				x:Name="btnLogin"  
+				Clicked="OpenSesame"  
+				FontAttributes="Bold"  
+				HorizontalOptions="Center"  
+				ImageSource="top_secret_icon.png"  
+				SemanticProperties.Description="Engage!"  
+				SemanticProperties.Hint="This is the way."  
+				Grid.Row="2" />  
+		</Grid>  
+	</ScrollView>  
 </ContentPage>

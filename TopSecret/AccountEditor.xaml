@@ -32,8 +32,8 @@
 		<Entry Placeholder="URL" Text="{Binding Record.Url, Mode=TwoWay}" />
 		<HorizontalStackLayout>
 			<Button Padding="20" Margin="10" Command="{Binding SaveCommand}" Text="Save" />
-			<Button Padding="20" Margin="10" Command="{Binding CloneCommand}" Text="Clone" />
-			<Button Padding="20" Margin="10" Command="{Binding DeleteCommand}" Text="Delete" />
+			<Button Padding="20" Margin="10" Command="{Binding CloneCommand}" Text="Clone" IsEnabled="{Binding IsExistingRecord}" />
+			<Button Padding="20" Margin="10" Command="{Binding DeleteCommand}" Text="Delete" IsEnabled="{Binding IsExistingRecord}" />
 			<Button Padding="20" Margin="10" Command="{Binding ListCommand}" Text="List" />
 		</HorizontalStackLayout>
 	</StackLayout>

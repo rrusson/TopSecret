@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows.Input;
 
 using TopSecret.Helpers;
@@ -8,6 +9,20 @@ public partial class AccountEditor : BasePage
 {
 	public AccountRecord Record { get; set; }
 
+	private bool _isExistingRecord;
+	public bool IsExistingRecord
+	{
+		get => _isExistingRecord;
+		set
+		{
+			if (_isExistingRecord != value)
+			{
+				_isExistingRecord = value;
+				OnPropertyChanged(nameof(IsExistingRecord));
+			}
+		}
+	}
+
 	public ICommand CloneCommand { get; set; }
 
 	public ICommand DeleteCommand { get; set; }
@@ -16,15 +31,16 @@ public partial class AccountEditor : BasePage
 
 	public ICommand ListCommand { get; set; }
 
-
 	public AccountEditor(AccountRecord record) : base()
-	{	
+	{
 		Record = record;
+		IsExistingRecord = !string.IsNullOrEmpty(record.AccountName);
+		
 		CloneCommand = new Command(async () => await CloneRecord());
 		DeleteCommand = new Command(async () => await DeleteRecord());
 		SaveCommand = new Command(async () => await SaveRecord());
 		ListCommand = new Command(async () => await Navigation.PopAsync());
-		BindingContext = this;		
+		BindingContext = this;
 	}
 
 	private async Task CloneRecord()
@@ -36,6 +52,9 @@ public partial class AccountEditor : BasePage
 
 		BindingContext = null; // Clear the binding context
 		Record = new AccountRecord("NEW", Record.UserName, Record.Password, string.Empty);
+		
+		// Set IsExistingRecord to false for the new cloned record
+		IsExistingRecord = false;
 
 		await Task.Delay(50).ConfigureAwait(true); // Small delay to ensure UI is refreshed
 		BindingContext = this; // Set the binding context again to force UI refresh
@@ -44,7 +63,7 @@ public partial class AccountEditor : BasePage
 	private async Task DeleteRecord()
 	{
 		await DataHelper.DeleteRecord(record: Record).ConfigureAwait(true);
-		
+
 		await Navigation.PopAsync().ConfigureAwait(true);
 	}
 
@@ -61,6 +80,8 @@ public partial class AccountEditor : BasePage
 
 		if (await PasswordManager.Instance.UpdateRecord(Record).ConfigureAwait(true))
 		{
+			// Once saved, this is now an existing record
+			IsExistingRecord = true;
 			await Navigation.PopAsync().ConfigureAwait(true);
 			return true;
 		}

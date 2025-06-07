@@ -24,7 +24,7 @@ public partial class LoginPage : ContentPage
 		if (!isPasswordRight)
 		{
 			Password.Text = "";
-			ErrorMessage.Text = "Nope.";
+			ErrorMessage.Text = "Nope. (Data is wiped after 10 failures.)";
 		}
 	}
 
