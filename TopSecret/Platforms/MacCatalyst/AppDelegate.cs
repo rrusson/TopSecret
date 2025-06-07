@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace TopSecret
+namespace TopSecret.Platforms.MacCatalyst
 {
 	[Register("AppDelegate")]
 	public class AppDelegate : MauiUIApplicationDelegate

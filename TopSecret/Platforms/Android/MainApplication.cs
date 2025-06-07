@@ -1,14 +1,12 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-using TopSecret.Platforms.Android;
-
-namespace TopSecret
+namespace TopSecret.Platforms.Android
 {
 	[Application]
 	public class MainApplication : MauiApplication
 	{
-		public MainApplication(IntPtr handle, JniHandleOwnership ownership)
+		public MainApplication(nint handle, JniHandleOwnership ownership)
 			: base(handle, ownership)
 		{
 		}

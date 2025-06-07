@@ -9,7 +9,7 @@ namespace TopSecret.Platforms.iOS
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Checked before use")]
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1422:Validate platform compatibility", Justification = "Checked before use")]
 		public void HideKeyboard()
-		 {
+		{
 			// Validate platform compatibility and try the most compatible approach first
 			if (UIApplication.SharedApplication.KeyWindow != null)
 			{

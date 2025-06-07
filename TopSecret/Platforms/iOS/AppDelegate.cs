@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace TopSecret
+namespace TopSecret.Platforms.iOS
 {
 	[Register("AppDelegate")]
 	public class AppDelegate : MauiUIApplicationDelegate

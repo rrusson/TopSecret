@@ -1,8 +1,6 @@
-﻿using ObjCRuntime;
+﻿using UIKit;
 
-using UIKit;
-
-namespace TopSecret
+namespace TopSecret.Platforms.MacCatalyst
 {
 	public class Program
 	{

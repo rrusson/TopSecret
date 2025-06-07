@@ -3,7 +3,7 @@ using Microsoft.Maui.Hosting;
 
 using System;
 
-namespace TopSecret
+namespace TopSecret.Platforms.Tizen
 {
 	internal class Program : MauiApplication
 	{
