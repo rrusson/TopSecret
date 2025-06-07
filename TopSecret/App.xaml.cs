@@ -4,7 +4,26 @@ namespace TopSecret
 {
 	public partial class App : Application
 	{
-		internal static string? MasterPassword { get; private set; }
+		private static readonly object _passwordLock = new();
+		private static string? _masterPassword;
+
+		internal static string? MasterPassword
+		{
+			get
+			{
+				lock (_passwordLock)
+				{
+					return _masterPassword;
+				}
+			}
+			private set
+			{
+				lock (_passwordLock)
+				{
+					_masterPassword = value;
+				}
+			}
+		}
 
 		public App()
 		{
@@ -14,7 +33,10 @@ namespace TopSecret
 
 		internal static void SetMasterPassword(string? password)
 		{
-			MasterPassword = password;
+			lock (_passwordLock)
+			{
+				_masterPassword = password;
+			}
 		}
 
 		// Force quit app immediately if it sleeps
