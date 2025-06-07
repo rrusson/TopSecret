@@ -10,6 +10,8 @@ public partial class BigListPage : ContentPage
 
 	private bool _isMasterPasswordVisible;
 
+	private IKeyboardHelper _keyboardHelper;
+
 	public bool IsMasterPasswordVisible
 	{
 		get => _isMasterPasswordVisible;
@@ -23,12 +25,16 @@ public partial class BigListPage : ContentPage
 	public BigListPage()
 	{
 		InitializeComponent();
+		_keyboardHelper = DependencyService.Get<IKeyboardHelper>();
 	}
 
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
 		KillTimer.Instance.Reset();
+
+		ToggleMasterPasswordVisibility(false);
+		_keyboardHelper?.HideKeyboard();
 
 		await RefreshDataAsync().ConfigureAwait(true);
 	}
@@ -87,16 +93,17 @@ public partial class BigListPage : ContentPage
 
 	private async Task UpdateMasterPassword()
 	{
+		ToggleMasterPasswordVisibility(false);
+
 		App.SetMasterPassword(password: null);
 		new StorageHelper().Remove("MasterPassword");
 
 		await PasswordManager.Instance.ChangeMasterPasswordAsync(MasterPw.Text).ConfigureAwait(true);
-		ToggleMasterPasswordVisibility(false);
 	}
 
 	private void ToggleMasterPasswordVisibility(bool isVisible)
 	{
-		IsMasterPasswordVisible = !IsMasterPasswordVisible;
+		IsMasterPasswordVisible = isVisible;
 		PasswordLabel.IsVisible = isVisible;
 		MasterPw.IsVisible = isVisible;
 		MasterPwChangeButton.IsVisible = isVisible;

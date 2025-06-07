@@ -1,6 +1,8 @@
 ﻿using Android.App;
 using Android.Runtime;
 
+using TopSecret.Platforms.Android;
+
 namespace TopSecret
 {
 	[Application]
@@ -11,6 +13,10 @@ namespace TopSecret
 		{
 		}
 
-		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+		protected override MauiApp CreateMauiApp()
+		{
+			DependencyService.Register<AndroidKeyboardHelper>();
+			return MauiProgram.CreateMauiApp();
+		}
 	}
 }
