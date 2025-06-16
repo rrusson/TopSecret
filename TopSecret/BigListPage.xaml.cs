@@ -9,7 +9,7 @@ public partial class BigListPage : ContentPage
 	public List<AccountRecord> Records => [.. PasswordManager.Instance.Records.OrderBy(r => r.AccountName)];
 
 	private bool _isMasterPasswordVisible;
-
+	private bool _isLoading;
 	private IKeyboardHelper _keyboardHelper;
 
 	public bool IsMasterPasswordVisible
@@ -22,10 +22,21 @@ public partial class BigListPage : ContentPage
 		}
 	}
 
+	public bool IsLoading
+	{
+		get => _isLoading;
+		set
+		{
+			_isLoading = value;
+			OnPropertyChanged(nameof(IsLoading));
+		}
+	}
+
 	public BigListPage()
 	{
 		InitializeComponent();
 		_keyboardHelper = DependencyService.Get<IKeyboardHelper>();
+		BindingContext = this;
 	}
 
 	protected override async void OnAppearing()
@@ -41,15 +52,13 @@ public partial class BigListPage : ContentPage
 
 	private async Task RefreshDataAsync()
 	{
-		BindingContext = null; // Clear the binding context
+		IsLoading = true;
 
-		if (Records.Count == 0)
-		{
-			await PasswordManager.Instance.PopulateRecordsAsync().ConfigureAwait(true);
-		}
-
+		await PasswordManager.Instance.PopulateRecordsAsync().ConfigureAwait(true);
+		OnPropertyChanged(nameof(Records));
+		
 		await Task.Delay(50).ConfigureAwait(true); // Small delay to ensure UI is refreshed
-		BindingContext = this; // Set the binding context again to force UI refresh
+		IsLoading = false;
 	}
 
 	private void OnAddClicked(object sender, EventArgs e)
@@ -70,11 +79,6 @@ public partial class BigListPage : ContentPage
 		Application.Current?.Quit();
 	}
 
-	/// <summary>
-	/// Resets the Master Password and navigates to the login page for new password entry
-	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="e"></param>
 	private void OnUpdateMasterClicked(object sender, EventArgs e)
 	{
 		MasterPw.Text = string.Empty;
@@ -110,4 +114,3 @@ public partial class BigListPage : ContentPage
 		btnUpdateMaster.IsEnabled = !isVisible;
 	}
 }
-

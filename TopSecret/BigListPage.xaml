@@ -5,119 +5,144 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:local="clr-namespace:TopSecret"
 	Title="Account List">
-	<VerticalStackLayout>
-		<ScrollView VerticalOptions="Start">
-			<ListView
-				Margin="10,5,10,5"
-				HeightRequest="500"
-				ItemTapped="OnItemTapped"
-				ItemsSource="{Binding Records}"
-				RowHeight="80">
-				<ListView.ItemTemplate>
-					<DataTemplate>
-						<ViewCell>
-							<Grid>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto" />
-									<RowDefinition Height="Auto" />
-									<RowDefinition Height="Auto" />
-								</Grid.RowDefinitions>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="100" />
-									<ColumnDefinition Width="*" />
-								</Grid.ColumnDefinitions>
+	<Grid>
+		<!-- Main Content -->
+		<VerticalStackLayout>
+			<ScrollView VerticalOptions="Start">
+				<ListView
+					Margin="10,5,10,5"
+					HeightRequest="500"
+					ItemTapped="OnItemTapped"
+					ItemsSource="{Binding Records}"
+					RowHeight="80">
+					<ListView.ItemTemplate>
+						<DataTemplate>
+							<ViewCell>
+								<Grid>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="Auto" />
+										<RowDefinition Height="Auto" />
+										<RowDefinition Height="Auto" />
+									</Grid.RowDefinitions>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="100" />
+										<ColumnDefinition Width="*" />
+									</Grid.ColumnDefinitions>
 
-								<Label
-									Grid.Row="0"
-									Grid.Column="0"
-									FontAttributes="Bold"
-									HorizontalTextAlignment="Start"
-									Text="Account:" />
-								<Label
-									Grid.Row="0"
-									Grid.Column="1"
-									FontAttributes="Bold"
-									HorizontalTextAlignment="End"
-									Text="{Binding AccountName}" />
-
-								<StackLayout
-									Grid.Row="1"
-									Grid.Column="0"
-									Orientation="Horizontal">
 									<Label
-										FontFamily="FontAwesome"
-										HorizontalTextAlignment="Start"
-										Text="&#xf007;" />
-									<Label
+										Grid.Row="0"
+										Grid.Column="0"
 										FontAttributes="Bold"
 										HorizontalTextAlignment="Start"
-										Text=" UserName:" />
-								</StackLayout>
-								<Label
-									Grid.Row="1"
-									Grid.Column="1"
-									Text="{Binding UserName}" />
-
-								<StackLayout
-									Grid.Row="2"
-									Grid.Column="0"
-									Orientation="Horizontal">
+										Text="Account:" />
 									<Label
-										FontFamily="FontAwesome"
-										HorizontalTextAlignment="Start"
-										Text="&#xf084;" />
-									<Label
+										Grid.Row="0"
+										Grid.Column="1"
 										FontAttributes="Bold"
-										HorizontalTextAlignment="Start"
-										Text=" Password:" />
-								</StackLayout>
-								<Label
-									Grid.Row="2"
-									Grid.Column="1"
-									Text="{Binding Password}" />
-							</Grid>
-						</ViewCell>
-					</DataTemplate>
-				</ListView.ItemTemplate>
-			</ListView>
-		</ScrollView>
-		<HorizontalStackLayout
-			Padding="20,10,10,10"
-			AbsoluteLayout.LayoutBounds="0.94,1.18,0.5,0.25"
-			AbsoluteLayout.LayoutFlags="PositionProportional"
-			HorizontalOptions="End"
-			Spacing="25"
-			VerticalOptions="EndAndExpand">
+										HorizontalTextAlignment="End"
+										Text="{Binding AccountName}" />
+
+									<StackLayout
+										Grid.Row="1"
+										Grid.Column="0"
+										Orientation="Horizontal">
+										<Label
+											FontFamily="FontAwesome"
+											HorizontalTextAlignment="Start"
+											Text="&#xf007;" />
+										<Label
+											FontAttributes="Bold"
+											HorizontalTextAlignment="Start"
+											Text=" UserName:" />
+									</StackLayout>
+									<Label
+										Grid.Row="1"
+										Grid.Column="1"
+										Text="{Binding UserName}" />
+
+									<StackLayout
+										Grid.Row="2"
+										Grid.Column="0"
+										Orientation="Horizontal">
+										<Label
+											FontFamily="FontAwesome"
+											HorizontalTextAlignment="Start"
+											Text="&#xf084;" />
+										<Label
+											FontAttributes="Bold"
+											HorizontalTextAlignment="Start"
+											Text=" Password:" />
+									</StackLayout>
+									<Label
+										Grid.Row="2"
+										Grid.Column="1"
+										Text="{Binding Password}" />
+								</Grid>
+							</ViewCell>
+						</DataTemplate>
+					</ListView.ItemTemplate>
+				</ListView>
+			</ScrollView>
+			<HorizontalStackLayout
+				Padding="20,10,10,10"
+				AbsoluteLayout.LayoutBounds="0.94,1.18,0.5,0.25"
+				AbsoluteLayout.LayoutFlags="PositionProportional"
+				HorizontalOptions="End"
+				Spacing="25"
+				VerticalOptions="EndAndExpand">
+				<Button
+					x:Name="btnAddNew"
+					Clicked="OnAddClicked"
+					SemanticProperties.Hint="Adds a new entry"
+					Text="New Entry" />
+				<Button
+					x:Name="btnUpdateMaster"
+					Clicked="OnUpdateMasterClicked"
+					SemanticProperties.Hint="Changes master password"
+					Text="Update Master" />
+				<Button
+					x:Name="btnQuit"
+					Clicked="OnQuitClicked"
+					SemanticProperties.Hint="Game Over"
+					Text="Quit" />
+			</HorizontalStackLayout>
+			<Label
+				x:Name="PasswordLabel"
+				IsVisible="False"
+				Text="New Master Password" />
+			<Entry
+				x:Name="MasterPw"
+				IsPassword="True"
+				IsVisible="False"
+				Placeholder="Password" />
 			<Button
-				x:Name="btnAddNew"
-				Clicked="OnAddClicked"
-				SemanticProperties.Hint="Adds a new entry"
-				Text="New Entry" />
-			<Button
-				x:Name="btnUpdateMaster"
-				Clicked="OnUpdateMasterClicked"
-				SemanticProperties.Hint="Changes master password"
-				Text="Update Master" />
-			<Button
-				x:Name="btnQuit"
-				Clicked="OnQuitClicked"
-				SemanticProperties.Hint="Game Over"
-				Text="Quit" />
-		</HorizontalStackLayout>
-		<Label
-			x:Name="PasswordLabel"
-			IsVisible="False"
-			Text="New Master Password" />
-		<Entry
-			x:Name="MasterPw"
-			IsPassword="True"
-			IsVisible="False"
-			Placeholder="Password" />
-		<Button
-			x:Name="MasterPwChangeButton"
-			Clicked="MasterPwChangeButtonClick"
-			IsVisible="False"
-			MaximumWidthRequest="200"
-			Text="Engage!" />
-	</VerticalStackLayout>
+				x:Name="MasterPwChangeButton"
+				Clicked="MasterPwChangeButtonClick"
+				IsVisible="False"
+				MaximumWidthRequest="200"
+				Text="Engage!" />
+		</VerticalStackLayout>
+
+		<!-- Loading Overlay -->
+		<Grid 
+			IsVisible="{Binding IsLoading}" 
+			BackgroundColor="#80000000" 
+			ZIndex="1">
+			<VerticalStackLayout 
+				HorizontalOptions="Center" 
+				VerticalOptions="Center" 
+				Spacing="10">
+				<ActivityIndicator 
+					IsRunning="{Binding IsLoading}" 
+					Color="White" 
+					HeightRequest="50" 
+					WidthRequest="50" />
+				<Label 
+					Text="Loading..." 
+					TextColor="White" 
+					FontSize="16" 
+					HorizontalOptions="Center" />
+			</VerticalStackLayout>
+		</Grid>
+	</Grid>
 </ContentPage>
