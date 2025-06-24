@@ -1,4 +1,6 @@
-﻿namespace TopSecret.Helpers
+﻿using System.Runtime.CompilerServices;
+
+namespace TopSecret.Helpers
 {
 	/// <summary>
 	/// Class to handle secure storage operations with encryption and decryption
@@ -28,9 +30,9 @@
 		/// <param name="key">Key for the record</param>
 		internal async Task<string?> LoadAsync(string key)
 		{
-			if (IsBusy)
+			while (IsBusy)
 			{
-				return null;	// Prevent displaying stale information if we're saving/removing items
+				await Task.Delay(50); // Wait, so we don't show stale information
 			}
 
 			IsBusy = true;	// Prevent saving until we finish loading current data
@@ -54,24 +56,23 @@
 		}
 
 		/// <summary>
-		/// Encrypts and saves a value to secure storage
+		/// Saves a value to secure storage (no encryption is applied)
 		/// </summary>
 		/// <param name="key">Key for the record</param>
 		/// <param name="value">Value to store</param>
-		internal async Task SaveEncryptedAsync(string key, string value)
+		internal async Task SaveAsync(string key, string value)
 		{
-			if (IsBusy)
+			while (IsBusy)
 			{
-				return; // Prevent possible data corruption if we're already busy saving/removing items
+				// Wait and keep trying. Saving must not fail.
+				await Task.Delay(50);
 			}
 
 			IsBusy = true;  // Lock the app while saving
-			var crypto = new CryptoHelper(App.MasterPassword);
-			string encrypted = crypto.Encrypt(value);
 
 			try
 			{
-				await SecureStorage.Default.SetAsync(key, encrypted).ConfigureAwait(false);
+				await SecureStorage.Default.SetAsync(key, value).ConfigureAwait(false);
 			}
 			finally
 			{
@@ -80,14 +81,27 @@
 		}
 
 		/// <summary>
+		/// Encrypts and saves a value to secure storage
+		/// </summary>
+		/// <param name="key">Key for the record</param>
+		/// <param name="value">Value to store</param>
+		internal async Task SaveEncryptedAsync(string key, string value)
+		{
+			var crypto = new CryptoHelper(App.MasterPassword);
+			string encrypted = crypto.Encrypt(value);
+
+			await SaveAsync(key, encrypted).ConfigureAwait(false);
+		}
+
+		/// <summary>
 		/// Removes a specific record from secure storage
 		/// </summary>
 		/// <param name="key">The key to wipe</param>
-		internal void Remove(string key)
+		internal async Task Remove(string key)
 		{
-			if (IsBusy)
+			while (IsBusy)
 			{
-				return; // Don't remove item if we're currently saving/removing items
+				await Task.Delay(50);
 			}
 
 			try

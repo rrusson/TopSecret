@@ -7,11 +7,11 @@ namespace TopSecret.Helpers
 	/// </summary>
 	internal class PasswordManager
 	{
-		private const string _accountDataKey = "AccountData";
-		private const string _masterPasswordKey = "MasterPassword";
 
 		private static PasswordManager? _instance;
-
+		// Constants for storage key naming consistency
+		private const object? AccountData = null;
+		private const object? MasterPassword = null;
 
 		/// <summary>
 		/// The collection of all account records
@@ -40,7 +40,7 @@ namespace TopSecret.Helpers
 		/// </summary>
 		internal async Task<string?> GetMasterPasswordAsync()
 		{
-			return await SecureStorage.Default.GetAsync(_masterPasswordKey).ConfigureAwait(true);
+			return await SecureStorage.Default.GetAsync(nameof(MasterPassword)).ConfigureAwait(true);
 		}
 
 		/// <summary>
@@ -84,18 +84,24 @@ namespace TopSecret.Helpers
 			}
 
 			var storage = new StorageHelper();
+			await storage.Remove(nameof(AccountData)).ConfigureAwait(true);    // Remove the old data first
+			while (storage.IsBusy)
+			{
+				await Task.Delay(50).ConfigureAwait(true);
+			}
+
+			await storage.SaveEncryptedAsync(nameof(AccountData), serialized).ConfigureAwait(true);
+			while (storage.IsBusy)
+			{
+				await Task.Delay(50).ConfigureAwait(true);
+			}
 
 			bool isSaved = false;
-			while (!isSaved)
+			while (!isSaved)	// Failure is not an option
 			{
-				storage.Remove(_accountDataKey);    // Remove the old data first
-
-				// Stay on same thread until data is re-encrypted and saved
-				await storage.SaveEncryptedAsync(_accountDataKey, serialized).ConfigureAwait(true);
-
 				try
 				{
-					string? serializedGarbage = await storage.LoadAsync(_accountDataKey).ConfigureAwait(true);
+					string? serializedGarbage = await storage.LoadAsync(nameof(AccountData)).ConfigureAwait(true);
 					isSaved = !string.IsNullOrWhiteSpace(serializedGarbage);
 				}
 				catch (CryptographicException)
@@ -116,16 +122,23 @@ namespace TopSecret.Helpers
 				return;
 			}
 
-			// Set a new app master password that's used by StorageHelper to encrypt all records
-			App.SetMasterPassword(newPassword);
-			var storage = new StorageHelper();
 			// Encrypt the new master password (using the unencrypted new password) and save it
-			await storage.SaveEncryptedAsync(_masterPasswordKey, newPassword).ConfigureAwait(false);
-
-			// Now Update the app master password used for encrypting/decrypting everything else
 			var crypto = new CryptoHelper(newPassword);
 			string encrypted = crypto.Encrypt(newPassword);
+
+			// Set the new app master password that's used by StorageHelper to encrypt all records
 			App.SetMasterPassword(encrypted);
+
+			var storage = new StorageHelper();
+			await storage.SaveAsync(nameof(MasterPassword), encrypted).ConfigureAwait(true);
+
+			string? retrievedPassword = await GetMasterPasswordAsync().ConfigureAwait(false);
+
+			// Make sure we have the exact saved master password used for encrypting/decrypting found in storage
+			if (retrievedPassword != encrypted)
+			{
+				throw new InvalidOperationException("Failed to save the new encrypted master password.");
+			}
 
 			// Resave all records with new (encrypted) master password
 			await SaveAllRecordsAsync().ConfigureAwait(true);
@@ -137,7 +150,7 @@ namespace TopSecret.Helpers
 		internal async Task PopulateRecordsAsync()
 		{
 			var storage = new StorageHelper();
-			string? serializedGarbage = await storage.LoadAsync(_accountDataKey).ConfigureAwait(false);
+			string? serializedGarbage = await storage.LoadAsync(nameof(AccountData)).ConfigureAwait(false);
 
 			if (string.IsNullOrWhiteSpace(serializedGarbage))
 			{

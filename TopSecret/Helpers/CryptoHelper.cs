@@ -7,7 +7,7 @@ namespace TopSecret.Helpers
 	{
 		private readonly byte[] _salt = Encoding.ASCII.GetBytes("Enter a unique salt value here.");
 		private readonly string _uniqueKey = "Enter a unique encryption key here.";
-		private readonly string _masterPw;  // This is the master password used to open the app
+		private readonly string _masterPw;  // This is the master password used for all encryption/decryption
 		private readonly string _deviceId;
 
 		/// <summary>
@@ -34,6 +34,7 @@ namespace TopSecret.Helpers
 			using Aes aes = GetAes();
 			using var memoryStream = new MemoryStream();
 			using var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
+
 			cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
 			cryptoStream.Close();
 
@@ -54,7 +55,7 @@ namespace TopSecret.Helpers
 				using Aes aes = GetAes();
 				using var memoryStream = new MemoryStream();
 				using var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Write);
-				
+
 				cryptoStream.Write(cipherTextBytes, 0, cipherTextBytes.Length);
 				cryptoStream.FlushFinalBlock(); // Ensure padding is properly handled
 				

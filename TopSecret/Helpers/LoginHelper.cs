@@ -9,12 +9,12 @@
 				return false;
 			}
 
-			var masterPw = await PasswordManager.Instance.GetMasterPasswordAsync();
+			var masterPw = await PasswordManager.Instance.GetMasterPasswordAsync().ConfigureAwait(false);
 
 			if (string.IsNullOrWhiteSpace(masterPw))
 			{
 				// If there's no master password, this is first use, so set the master password
-				await PasswordManager.Instance.ChangeMasterPasswordAsync(allegedPw).ConfigureAwait(true);
+				await PasswordManager.Instance.ChangeMasterPasswordAsync(allegedPw).ConfigureAwait(false);
 				await SecureStorage.Default.SetAsync("badAttempts", "0").ConfigureAwait(false);
 				return true;
 			}
