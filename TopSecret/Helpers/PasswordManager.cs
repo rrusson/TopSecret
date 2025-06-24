@@ -7,11 +7,10 @@ namespace TopSecret.Helpers
 	/// </summary>
 	internal class PasswordManager
 	{
-
-		private static PasswordManager? _instance;
 		// Constants for storage key naming consistency
 		private const object? AccountData = null;
 		private const object? MasterPassword = null;
+		private static readonly Lazy<PasswordManager> _lazyInstance = new(() => new PasswordManager(), isThreadSafe: true);
 
 		/// <summary>
 		/// The collection of all account records
@@ -21,14 +20,7 @@ namespace TopSecret.Helpers
 		/// <summary>
 		/// Singleton for the app's core functionality
 		/// </summary>
-		public static PasswordManager Instance
-		{
-			get
-			{
-				_instance ??= new PasswordManager();
-				return _instance;
-			}
-		}
+		public static PasswordManager Instance => _lazyInstance.Value;
 
 		private PasswordManager()
 		{
@@ -84,7 +76,7 @@ namespace TopSecret.Helpers
 			}
 
 			var storage = new StorageHelper();
-			await storage.Remove(nameof(AccountData)).ConfigureAwait(true);    // Remove the old data first
+			await storage.RemoveAsync(nameof(AccountData)).ConfigureAwait(true);    // Remove the old data first
 			while (storage.IsBusy)
 			{
 				await Task.Delay(50).ConfigureAwait(true);
@@ -134,7 +126,7 @@ namespace TopSecret.Helpers
 
 			string? retrievedPassword = await GetMasterPasswordAsync().ConfigureAwait(false);
 
-			// Make sure we have the exact saved master password used for encrypting/decrypting found in storage
+			// Make sure what we found in storage matches master password used for encrypting/decrypting 
 			if (retrievedPassword != encrypted)
 			{
 				throw new InvalidOperationException("Failed to save the new encrypted master password.");

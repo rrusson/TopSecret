@@ -97,7 +97,7 @@ namespace TopSecret.Helpers
 		/// Removes a specific record from secure storage
 		/// </summary>
 		/// <param name="key">The key to wipe</param>
-		internal async Task Remove(string key)
+		internal async Task RemoveAsync(string key)
 		{
 			while (IsBusy)
 			{

@@ -5,7 +5,7 @@ namespace TopSecret
 	public partial class App : Application
 	{
 		private static readonly object _passwordLock = new();
-		private static string? _masterPassword;
+		private volatile static string? _masterPassword;
 
 		internal static string? MasterPassword
 		{

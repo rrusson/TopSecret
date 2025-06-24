@@ -6,11 +6,20 @@ namespace TopSecret;
 
 public partial class BigListPage : ContentPage
 {
-	public List<AccountRecord> Records => [.. PasswordManager.Instance.Records.OrderBy(r => r.AccountName)];
-
-	private bool _isMasterPasswordVisible;
 	private bool _isLoading;
-	private IKeyboardHelper _keyboardHelper;
+	private bool _isMasterPasswordVisible;
+	private List<AccountRecord> _records = [];
+	private readonly IKeyboardHelper _keyboardHelper;
+
+	public bool IsLoading
+	{
+		get => _isLoading;
+		set
+		{
+			_isLoading = value;
+			OnPropertyChanged(nameof(IsLoading));
+		}
+	}
 
 	public bool IsMasterPasswordVisible
 	{
@@ -22,13 +31,13 @@ public partial class BigListPage : ContentPage
 		}
 	}
 
-	public bool IsLoading
+	public List<AccountRecord> Records
 	{
-		get => _isLoading;
-		set
+		get => _records;
+		private set
 		{
-			_isLoading = value;
-			OnPropertyChanged(nameof(IsLoading));
+			_records = value;
+			OnPropertyChanged(nameof(Records));
 		}
 	}
 
@@ -55,9 +64,9 @@ public partial class BigListPage : ContentPage
 		IsLoading = true;
 
 		await PasswordManager.Instance.PopulateRecordsAsync().ConfigureAwait(true);
-		OnPropertyChanged(nameof(Records));
-		
-		await Task.Delay(50).ConfigureAwait(true); // Small delay to ensure UI is refreshed
+		Records = [.. PasswordManager.Instance.Records.OrderBy(r => r.AccountName)];
+
+		//await Task.Delay(50).ConfigureAwait(true); // Small delay to ensure UI is refreshed
 		IsLoading = false;
 	}
 
@@ -100,7 +109,7 @@ public partial class BigListPage : ContentPage
 		ToggleMasterPasswordVisibility(false);
 
 		App.SetMasterPassword(password: null);
-		new StorageHelper().Remove("MasterPassword");
+		await new StorageHelper().RemoveAsync("MasterPassword").ConfigureAwait(true);
 
 		await PasswordManager.Instance.ChangeMasterPasswordAsync(MasterPw.Text).ConfigureAwait(true);
 	}
