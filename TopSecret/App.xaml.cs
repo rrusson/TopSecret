@@ -28,6 +28,11 @@ namespace TopSecret
 		public App()
 		{
 			InitializeComponent();
+
+			// Global exception handlers
+			AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+			TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+
 			MainPage = new AppShell();
 		}
 
@@ -47,6 +52,31 @@ namespace TopSecret
 			// Start timer here (automatically quits if user is idle too long)
 			base.OnStart();
 			KillTimer.Instance.Reset();
+		}
+
+		private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			ShowException(e.ExceptionObject as Exception);
+		}
+
+		private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+		{
+			ShowException(e.Exception);
+			e.SetObserved();
+		}
+
+		private void ShowException(Exception? ex)
+		{
+			if (ex == null)
+			{
+				return;
+			}
+
+			// Use MainThread to ensure UI access
+			Application.Current?.Dispatcher.Dispatch(() =>
+			{
+				Shell.Current?.DisplayAlert("Unhandled Exception", ex.Message, "OK");
+			});
 		}
 	}
 }
