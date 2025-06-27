@@ -22,8 +22,8 @@ namespace TopSecret
 			builder.Logging.AddDebug();
 #endif
 
-			//Add a timer that automatically kills the app if it's been idle too long
-			builder.Services.AddSingleton<KillTimer>();
+			// Consider removing singleton pattern from KillTimer and PasswordManager; updating to use Dependency Injection instead
+			//builder.Services.AddSingleton<KillTimer>();
 			return builder.Build();
 		}
 	}

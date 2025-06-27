@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-
+﻿
 namespace TopSecret.Helpers
 {
 	/// <summary>
@@ -83,24 +82,6 @@ namespace TopSecret.Helpers
 			}
 
 			await storage.SaveEncryptedAsync(nameof(AccountData), serialized).ConfigureAwait(true);
-			while (storage.IsBusy)
-			{
-				await Task.Delay(50).ConfigureAwait(true);
-			}
-
-			bool isSaved = false;
-			while (!isSaved)	// Failure is not an option
-			{
-				try
-				{
-					string? serializedGarbage = await storage.LoadAsync(nameof(AccountData)).ConfigureAwait(true);
-					isSaved = !string.IsNullOrWhiteSpace(serializedGarbage);
-				}
-				catch (CryptographicException)
-				{
-					throw new InvalidOperationException("Oops. The encrypted data didn't save correctly.");
-				}
-			}
 		}
 
 		/// <summary>
@@ -129,7 +110,7 @@ namespace TopSecret.Helpers
 			// Make sure what we found in storage matches master password used for encrypting/decrypting 
 			if (retrievedPassword != encrypted)
 			{
-				throw new InvalidOperationException("Failed to save the new encrypted master password.");
+				throw new InvalidOperationException("Master password encryption failed. Please try again.");
 			}
 
 			// Resave all records with new (encrypted) master password

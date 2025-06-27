@@ -7,9 +7,9 @@ namespace TopSecret;
 
 public partial class AccountEditor : BasePage
 {
-	public AccountRecord Record { get; set; }
-
 	private bool _isExistingRecord;
+	private AccountRecord? _record;
+
 	public bool IsExistingRecord
 	{
 		get => _isExistingRecord;
@@ -23,13 +23,23 @@ public partial class AccountEditor : BasePage
 		}
 	}
 
+	public AccountRecord? Record
+	{
+		get => _record;
+		set
+		{
+			_record = value;
+			OnPropertyChanged(nameof(Record));
+		}
+	}
+
 	public ICommand CloneCommand { get; set; }
 
 	public ICommand DeleteCommand { get; set; }
 
-	public ICommand SaveCommand { get; set; }
-
 	public ICommand ListCommand { get; set; }
+
+	public ICommand SaveCommand { get; set; }
 
 	public AccountEditor(AccountRecord record) : base()
 	{

@@ -52,7 +52,7 @@ namespace TopSecret.Helpers
 		/// </summary>
 		/// <param name="record">Record</param>
 		/// <returns>False on failure</returns>
-		internal static async Task<bool> DeleteRecord(AccountRecord record)
+		internal static async Task<bool> DeleteRecord(AccountRecord? record)
 		{
 			if (record?.Id == null)
 			{
@@ -80,7 +80,7 @@ namespace TopSecret.Helpers
 		/// </summary>
 		/// <param name="record">Record</param>
 		/// <returns>False if record is missing</returns>
-		internal static async Task<bool> UpdateRecord(AccountRecord record)
+		internal static async Task<bool> UpdateRecord(AccountRecord? record)
 		{
 			if (record?.AccountName == null)
 			{
