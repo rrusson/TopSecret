@@ -78,6 +78,10 @@ public partial class AccountEditor : BasePage
 			return false;
 		}
 
+		Record.AccountName = SanitizeInput(Record.AccountName);
+		Record.UserName = SanitizeInput(Record.UserName);
+		Record.Password = SanitizeInput(Record.Password);
+
 		if (await PasswordManager.Instance.UpdateRecord(Record).ConfigureAwait(true))
 		{
 			// Once saved, this is now an existing record
@@ -87,5 +91,16 @@ public partial class AccountEditor : BasePage
 		}
 
 		return false;
+	}
+
+	private string SanitizeInput(string input)
+	{
+		if (string.IsNullOrWhiteSpace(input))
+		{
+			return string.Empty;
+		}
+
+		// Remove any non-printable characters that would only cause us grief
+		return new string([.. input.Where(c => !char.IsControl(c))]);
 	}
 }

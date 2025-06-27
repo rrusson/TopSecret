@@ -15,18 +15,16 @@ namespace TopSecret.Helpers
 		{
 			if (string.IsNullOrEmpty(acctData))
 			{
-				yield return (AccountRecord)Enumerable.Empty<AccountRecord>();	// No Account Data file yet
+				yield break; // No Account Data file yet
 			}
-			else
-			{
-				string[] allData = acctData.Split((char)13);    // Parse out the individual account records
 
-				for (int i = 0; i < allData.Length; i++)
+			string[] allData = acctData.Split((char)13);    // Parse out the individual account records
+
+			for (int i = 0; i < allData.Length; i++)
+			{
+				if (allData[i].Length > 1)                  // This should protect against empty, terminating (char)13
 				{
-					if (allData[i].Length > 1)                  // This should protect against empty, terminating (char)13
-					{
-						yield return new AccountRecord(allData[i]);
-					}
+					yield return new AccountRecord(allData[i]);
 				}
 			}
 		}

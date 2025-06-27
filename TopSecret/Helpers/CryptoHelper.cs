@@ -36,6 +36,7 @@ namespace TopSecret.Helpers
 			using var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
 
 			cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
+			cryptoStream.FlushFinalBlock();
 			cryptoStream.Close();
 
 			return Convert.ToBase64String(memoryStream.ToArray());
