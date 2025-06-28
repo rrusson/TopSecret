@@ -29,17 +29,25 @@ namespace TopSecret.Helpers
 		/// <returns>Encrypted garbage out</returns>
 		public string Encrypt(string plainText)
 		{
-			var plainTextBytes = Encoding.Unicode.GetBytes(plainText);
+			try
+			{
+				var plainTextBytes = Encoding.Unicode.GetBytes(plainText);
 
-			using Aes aes = GetAes();
-			using var memoryStream = new MemoryStream();
-			using var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
+				using Aes aes = GetAes();
+				using var memoryStream = new MemoryStream();
+				using var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
 
-			cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
-			cryptoStream.FlushFinalBlock();
-			cryptoStream.Close();
+				cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
+				cryptoStream.FlushFinalBlock();
+				cryptoStream.Close();
 
-			return Convert.ToBase64String(memoryStream.ToArray());
+				return Convert.ToBase64String(memoryStream.ToArray());
+			}
+			catch (CryptographicException ex)
+			{
+				// Preserve the original exception but add more context
+				throw new CryptographicException("Failed to encrypt data. This may be caused by using different encryption parameters or corrupted data.", ex);
+			}
 		}
 
 		/// <summary>

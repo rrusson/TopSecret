@@ -1,4 +1,6 @@
-﻿using AsyncAwaitBestPractices;
+﻿using System.Security.Cryptography;
+
+using AsyncAwaitBestPractices;
 
 using TopSecret.Helpers;
 
@@ -63,10 +65,16 @@ public partial class BigListPage : ContentPage
 	{
 		IsLoading = true;
 
-		await PasswordManager.Instance.PopulateRecordsAsync().ConfigureAwait(true);
-		Records = [.. PasswordManager.Instance.Records.OrderBy(r => r.AccountName)];
+		try
+		{
+			await PasswordManager.Instance.PopulateRecordsAsync().ConfigureAwait(true);
+			Records = [.. PasswordManager.Instance.Records.OrderBy(r => r.AccountName)];
+		}
+		catch (Exception)
+		{
+			await DisplayAlert("ERROR", "Unable to load account data. Please try again or reinstall.", "OK").ConfigureAwait(true);
+		}
 
-		//await Task.Delay(50).ConfigureAwait(true); // Small delay to ensure UI is refreshed
 		IsLoading = false;
 	}
 
@@ -106,12 +114,36 @@ public partial class BigListPage : ContentPage
 
 	private async Task UpdateMasterPassword()
 	{
-		ToggleMasterPasswordVisibility(false);
+		if (string.IsNullOrWhiteSpace(MasterPw.Text))
+		{
+			await DisplayAlert("ERROR", "Master Password can't be empty.", "OK").ConfigureAwait(true);
+		}
 
-		App.SetMasterPassword(password: null);
-		await new StorageHelper().RemoveAsync("MasterPassword").ConfigureAwait(true);
+		// Set the new app master password that's used by StorageHelper to encrypt/decrypt all records
+		string? currentMasterPassword = App.MasterPassword;
 
-		await PasswordManager.Instance.ChangeMasterPasswordAsync(MasterPw.Text).ConfigureAwait(true);
+		try
+		{
+			App.SetMasterPassword(password: null);
+			await PasswordManager.Instance.ChangeMasterPasswordAsync(MasterPw.Text).ConfigureAwait(true);
+			ToggleMasterPasswordVisibility(false);
+			return;
+		}
+		catch (InvalidOperationException invEx)
+		{
+			await DisplayAlert("ERROR", invEx.Message, "OK").ConfigureAwait(true);
+		}
+		catch (CryptographicException cryptoEx)
+		{
+			await DisplayAlert("ERROR", cryptoEx.Message, "OK").ConfigureAwait(true);
+		}
+		catch (Exception)
+		{
+			await DisplayAlert("ERROR", "Oops. The encrypted data didn't save correctly. Please try again.", "OK").ConfigureAwait(true);
+		}
+
+		ToggleMasterPasswordVisibility(true);   // Show the password input in case of error so user can try again
+		App.SetMasterPassword(currentMasterPassword); // Reset to previous master password on failure
 	}
 
 	private void ToggleMasterPasswordVisibility(bool isVisible)

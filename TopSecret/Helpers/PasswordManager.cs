@@ -75,7 +75,7 @@ namespace TopSecret.Helpers
 			}
 
 			var storage = new StorageHelper();
-			await storage.RemoveAsync(nameof(AccountData)).ConfigureAwait(true);    // Remove the old data first
+
 			while (storage.IsBusy)
 			{
 				await Task.Delay(50).ConfigureAwait(true);
@@ -95,17 +95,21 @@ namespace TopSecret.Helpers
 				return;
 			}
 
-			// Encrypt the new master password (using the unencrypted new password) and save it
+			string? currentMasterPassword = App.MasterPassword;
+
+			// Encrypt the new master password
 			var crypto = new CryptoHelper(newPassword);
 			string encrypted = crypto.Encrypt(newPassword);
 
-			// Set the new app master password that's used by StorageHelper to encrypt all records
-			App.SetMasterPassword(encrypted);
-
+			// Wipe and recreate the master password in secure storage
 			var storage = new StorageHelper();
+			await storage.RemoveAsync("MasterPassword").ConfigureAwait(true);
 			await storage.SaveAsync(nameof(MasterPassword), encrypted).ConfigureAwait(true);
 
-			string? retrievedPassword = await GetMasterPasswordAsync().ConfigureAwait(false);
+			// Set the new app master password that's used by StorageHelper to encrypt/decrypt all records
+			App.SetMasterPassword(encrypted);
+
+			string? retrievedPassword = await GetMasterPasswordAsync().ConfigureAwait(true);
 
 			// Make sure what we found in storage matches master password used for encrypting/decrypting 
 			if (retrievedPassword != encrypted)
@@ -114,7 +118,18 @@ namespace TopSecret.Helpers
 			}
 
 			// Resave all records with new (encrypted) master password
-			await SaveAllRecordsAsync().ConfigureAwait(true);
+			try
+			{
+				await SaveAllRecordsAsync().ConfigureAwait(true);
+			}
+			catch (Exception)
+			{
+				// Rollback MasterPassword to the previous value if saving records failed
+				await storage.RemoveAsync("MasterPassword").ConfigureAwait(true);
+				await storage.SaveAsync(nameof(MasterPassword), currentMasterPassword!).ConfigureAwait(true);
+				App.SetMasterPassword(encrypted);
+				throw new InvalidOperationException("Master password encryption failed. Please try again.");
+			}
 		}
 
 		/// <summary>

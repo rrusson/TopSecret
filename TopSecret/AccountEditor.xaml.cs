@@ -72,35 +72,47 @@ public partial class AccountEditor : BasePage
 
 	private async Task DeleteRecord()
 	{
-		await DataHelper.DeleteRecord(record: Record).ConfigureAwait(true);
-
-		await Navigation.PopAsync().ConfigureAwait(true);
+		try
+		{
+			_ = await DataHelper.DeleteRecord(record: Record).ConfigureAwait(true);
+			await Navigation.PopAsync().ConfigureAwait(true);
+		}
+		catch (Exception ex)
+		{
+			await DisplayAlert("ERROR", ex.Message, "OK").ConfigureAwait(true);
+		}
 	}
 
-	private async Task<bool> SaveRecord()
+	private async Task SaveRecord()
 	{
 		if (Record is null
 			|| string.IsNullOrWhiteSpace(Record.AccountName)
 			|| string.IsNullOrWhiteSpace(Record.UserName)
 			|| string.IsNullOrWhiteSpace(Record.Password))
 		{
-			await DisplayAlert("Error", "Account Name, User Name, and Password are required.", "OK").ConfigureAwait(true);
-			return false;
+			await DisplayAlert("ERROR", "Account Name, User Name, and Password are required.", "OK").ConfigureAwait(true);
+			return;
 		}
 
 		Record.AccountName = SanitizeInput(Record.AccountName);
 		Record.UserName = SanitizeInput(Record.UserName);
 		Record.Password = SanitizeInput(Record.Password);
 
-		if (await PasswordManager.Instance.UpdateRecord(Record).ConfigureAwait(true))
+		try
 		{
-			// Once saved, this is now an existing record
-			IsExistingRecord = true;
-			await Navigation.PopAsync().ConfigureAwait(true);
-			return true;
-		}
+			if (await PasswordManager.Instance.UpdateRecord(Record).ConfigureAwait(true))
+			{
+				IsExistingRecord = true;
+				await Navigation.PopAsync().ConfigureAwait(true);
+				return;
+			}
 
-		return false;
+			await DisplayAlert("ERROR", "Record not saved, please try again.", "OK").ConfigureAwait(true);
+		}
+		catch (Exception ex)
+		{
+			await DisplayAlert("ERROR", ex.Message, "OK").ConfigureAwait(true);
+		}
 	}
 
 	private string SanitizeInput(string input)
