@@ -7,10 +7,10 @@
 	x:Subclass="TopSecret.AccountEditor">
 	<StackLayout Margin="20">
 		<Entry IsVisible="False" Text="{Binding Record.Id}" />
-        <StackLayout Orientation="Horizontal">
-            <Label Text="&#xf02e;" FontFamily="FontAwesome" />
-            <Label Text=" Account" />
-        </StackLayout>
+		<StackLayout Orientation="Horizontal">
+			<Label Text="&#xf02e;" FontFamily="FontAwesome" />
+			<Label Text=" Account" />
+		</StackLayout>
 		<Entry Placeholder="Account Name" Text="{Binding Record.AccountName, Mode=TwoWay}" />
 
 		<StackLayout Orientation="Horizontal">

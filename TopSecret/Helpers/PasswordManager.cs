@@ -56,7 +56,7 @@ namespace TopSecret.Helpers
 		}
 
 		/// <inheritdoc/>
-		public async Task<bool> DeleteRecord(int recordId)
+		public async Task<bool> DeleteRecord(Guid? recordId)
 		{
 			var match = Records.FirstOrDefault(r => r.Id == recordId);
 
