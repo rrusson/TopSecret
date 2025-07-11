@@ -22,9 +22,9 @@ namespace TopSecret.Helpers
         /// <summary>
         /// Removes a record from the account data
         /// </summary>
-        /// <param name="record">Record</param>
+        /// <param name="recordId">Record ID</param>
         /// <returns>False on failure</returns>
-        Task<bool> DeleteRecord(AccountRecord? record);
+        Task<bool> DeleteRecord(int recordId);
 
         /// <summary>
         /// Updates the master password used to log in to the app and re-encrypts all records

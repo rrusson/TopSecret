@@ -83,7 +83,7 @@ public partial class AccountEditor : BasePage
 	{
 		try
 		{
-			_ = await _passwordManager.DeleteRecord(record: Record).ConfigureAwait(true);
+			_ = await _passwordManager.DeleteRecord(Record.Id).ConfigureAwait(true);
 			await Navigation.PopAsync().ConfigureAwait(true);
 		}
 		catch (Exception ex)

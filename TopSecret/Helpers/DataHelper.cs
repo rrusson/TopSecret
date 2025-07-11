@@ -4,10 +4,6 @@ namespace TopSecret.Helpers
 {
 	public class DataHelper : IDataHelper
 	{
-		public DataHelper()
-		{
-		}
-
 		/// <summary>
 		/// Deserializes <paramref name="acctData"/> into a collection of Account Records
 		/// </summary>

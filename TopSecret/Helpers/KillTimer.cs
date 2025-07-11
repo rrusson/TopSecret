@@ -11,8 +11,6 @@ namespace TopSecret.Helpers
         private System.Timers.Timer? _timer;
         private const double _minutesToTimeout = 3;
 
-        public static DateTime LastTimeOfReset { get; set; }
-
         public KillTimer()
         {
             Reset();
@@ -30,7 +28,6 @@ namespace TopSecret.Helpers
 			_timer.Elapsed += TimerElapsed;
 			_timer.AutoReset = false;
 			_timer.Start();
-			LastTimeOfReset = DateTime.Now;
         }
 
         private void TimerElapsed(object? sender, ElapsedEventArgs? e)

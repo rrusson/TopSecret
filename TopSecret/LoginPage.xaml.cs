@@ -13,7 +13,6 @@ public partial class LoginPage : ContentPage
 		_loginHelper = loginHelper;
 		_killTimer = killTimer;
 		InitializeComponent();
-		_killTimer.Reset();
 		Password.Focus();
 	}
 

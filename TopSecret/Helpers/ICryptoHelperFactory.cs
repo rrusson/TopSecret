@@ -7,6 +7,6 @@ namespace TopSecret.Helpers
         /// </summary>
         /// <param name="password">The password to use for encryption/decryption</param>
         /// <returns>A CryptoHelper instance</returns>
-        ICryptoHelper CreateCryptoHelper(string password);
+        ICryptoHelper CreateCryptoHelper(string? password);
     }
 }

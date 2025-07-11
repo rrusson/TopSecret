@@ -64,16 +64,11 @@ namespace TopSecret.Helpers
 		/// <summary>
 		/// Removes a record from the account data
 		/// </summary>
-		/// <param name="record">Record</param>
+		/// <param name="recordId">Record ID</param>
 		/// <returns>False on failure</returns>
-		public async Task<bool> DeleteRecord(AccountRecord? record)
+		public async Task<bool> DeleteRecord(int recordId)
 		{
-			if (record?.Id == null)
-			{
-				return false;
-			}
-
-			var match = Records.FirstOrDefault(r => r.Id == record.Id);
+			var match = Records.FirstOrDefault(r => r.Id == recordId);
 
 			if (match == null)
 			{
