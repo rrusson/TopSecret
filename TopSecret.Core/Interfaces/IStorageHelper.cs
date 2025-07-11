@@ -1,4 +1,4 @@
-namespace TopSecret.Core.Helpers
+namespace TopSecret.Core.Interfaces
 {
 	public interface IStorageHelper
 	{

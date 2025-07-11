@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-
+using TopSecret.Core;
+using TopSecret.Core.Interfaces;
 using TopSecret.Helpers;
 
 namespace TopSecret
@@ -19,6 +20,7 @@ namespace TopSecret
 				});
 
 			// Register services for dependency injection
+			builder.Services.AddSingleton<IMasterPasswordProvider, MasterPasswordProvider>();
 			builder.Services.AddSingleton<ICryptoHelperFactory, CryptoHelperFactory>();
 			builder.Services.AddSingleton<IDataHelper, DataHelper>();
 			builder.Services.AddSingleton<IStorageHelper, StorageHelper>();

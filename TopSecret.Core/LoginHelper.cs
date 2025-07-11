@@ -1,4 +1,6 @@
-namespace TopSecret.Core.Helpers
+using TopSecret.Core.Interfaces;
+
+namespace TopSecret.Core
 {
 	public class LoginHelper : ILoginHelper
 	{

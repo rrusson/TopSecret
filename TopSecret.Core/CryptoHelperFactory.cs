@@ -1,8 +1,9 @@
-namespace TopSecret.Helpers
+using TopSecret.Core.Interfaces;
+
+namespace TopSecret.Core
 {
 	public class CryptoHelperFactory : ICryptoHelperFactory
 	{
-		/// <inheritdoc/>
 		public ICryptoHelper CreateCryptoHelper(string? password)
 		{
 			return new CryptoHelper(password);

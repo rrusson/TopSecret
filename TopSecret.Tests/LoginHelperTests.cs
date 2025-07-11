@@ -1,5 +1,6 @@
 using Moq;
-using TopSecret.Core.Helpers;
+using TopSecret.Core;
+using TopSecret.Core.Interfaces;
 using Xunit;
 
 namespace TopSecret.Tests

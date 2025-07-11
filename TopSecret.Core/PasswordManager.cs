@@ -1,4 +1,6 @@
-namespace TopSecret.Core.Helpers
+using TopSecret.Core.Interfaces;
+
+namespace TopSecret.Core
 {
 	/// <summary>
 	/// Loads and saves master password list (core functionality of the app)
