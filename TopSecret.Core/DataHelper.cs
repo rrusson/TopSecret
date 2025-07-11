@@ -1,6 +1,8 @@
-﻿using System.Text;
+using System.Text;
 
-namespace TopSecret.Helpers
+using TopSecret.Core.Interfaces;
+
+namespace TopSecret.Core
 {
 	public class DataHelper : IDataHelper
 	{

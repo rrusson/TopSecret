@@ -1,4 +1,4 @@
-﻿namespace TopSecret
+namespace TopSecret.Core
 {
 	//? Make this a Record instead ?
 
@@ -56,4 +56,3 @@
 		}
 	}
 }
-

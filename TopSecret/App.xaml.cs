@@ -1,4 +1,5 @@
-﻿using TopSecret.Helpers;
+﻿using TopSecret.Core.Interfaces;
+using TopSecret.Helpers;
 
 namespace TopSecret
 {
