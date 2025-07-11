@@ -45,6 +45,9 @@ public partial class LoginPage : ContentPage
 
 		ErrorMessage.Text = string.Empty;
 
+		// Set the master password in the App for encryption/decryption operations
+		App.SetMasterPassword(Password.Text);
+
 		// Get the BigListPage from the service provider
 		var services = Application.Current?.Handler?.MauiContext?.Services;
 		if (services != null)
