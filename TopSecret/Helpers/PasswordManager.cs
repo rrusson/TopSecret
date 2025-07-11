@@ -58,6 +58,8 @@ namespace TopSecret.Helpers
 		/// <inheritdoc/>
 		public async Task<bool> DeleteRecord(Guid? recordId)
 		{
+			ArgumentNullException.ThrowIfNull(recordId, nameof(recordId));
+
 			var match = Records.FirstOrDefault(r => r.Id == recordId);
 
 			if (match == null)
