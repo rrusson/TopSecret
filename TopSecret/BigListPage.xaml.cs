@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 
 using AsyncAwaitBestPractices;
+using Microsoft.Extensions.DependencyInjection;
 
 using TopSecret.Helpers;
 
