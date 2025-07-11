@@ -25,19 +25,13 @@ namespace TopSecret.Helpers
 			_cryptoHelperFactory = cryptoHelperFactory;
 		}
 
-		/// <summary>
-		/// Returns the (encrypted) master password or null if it hasn't been set
-		/// </summary>
+		/// <inheritdoc/>
 		public async Task<string?> GetMasterPasswordAsync()
 		{
 			return await SecureStorage.Default.GetAsync(nameof(MasterPassword)).ConfigureAwait(true);
 		}
 
-		/// <summary>
-		/// Updates or inserts a record into the account data
-		/// </summary>
-		/// <param name="record">Record</param>
-		/// <returns>False if record is missing</returns>
+		/// <inheritdoc/>
 		public async Task<bool> UpdateRecord(AccountRecord record)
 		{
 			if (record?.AccountName == null)
@@ -61,11 +55,7 @@ namespace TopSecret.Helpers
 			return true;
 		}
 
-		/// <summary>
-		/// Removes a record from the account data
-		/// </summary>
-		/// <param name="recordId">Record ID</param>
-		/// <returns>False on failure</returns>
+		/// <inheritdoc/>
 		public async Task<bool> DeleteRecord(int recordId)
 		{
 			var match = Records.FirstOrDefault(r => r.Id == recordId);
@@ -100,10 +90,7 @@ namespace TopSecret.Helpers
 			await _storageHelper.SaveEncryptedAsync(nameof(AccountData), serialized).ConfigureAwait(true);
 		}
 
-		/// <summary>
-		/// Updates the master password used to log in to the app and re-encrypts all records
-		/// </summary>
-		/// <param name="newPassword">New password to use</param>
+		/// <inheritdoc/>
 		public async Task ChangeMasterPasswordAsync(string newPassword)
 		{
 			if (string.IsNullOrWhiteSpace(newPassword))

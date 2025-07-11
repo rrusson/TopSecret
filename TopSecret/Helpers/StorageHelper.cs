@@ -29,10 +29,7 @@ namespace TopSecret.Helpers
 			}
 		}
 
-		/// <summary>
-		/// Decrypts a value from secure storage
-		/// </summary>
-		/// <param name="key">Key for the record</param>
+		/// <inheritdoc/>
 		public async Task<string?> LoadAsync(string key)
 		{
 			while (IsBusy)
@@ -60,11 +57,7 @@ namespace TopSecret.Helpers
 			}
 		}
 
-		/// <summary>
-		/// Saves a value to secure storage (no encryption is applied)
-		/// </summary>
-		/// <param name="key">Key for the record</param>
-		/// <param name="value">Value to store</param>
+		/// <inheritdoc/>
 		public async Task SaveAsync(string key, string value)
 		{
 			while (IsBusy)
@@ -85,11 +78,7 @@ namespace TopSecret.Helpers
 			}
 		}
 
-		/// <summary>
-		/// Encrypts and saves a value to secure storage
-		/// </summary>
-		/// <param name="key">Key for the record</param>
-		/// <param name="value">Value to store</param>
+		/// <inheritdoc/>
 		public async Task SaveEncryptedAsync(string key, string value)
 		{
 			var crypto = _cryptoHelperFactory.CreateCryptoHelper(App.MasterPassword);
@@ -98,10 +87,7 @@ namespace TopSecret.Helpers
 			await SaveAsync(key, encrypted).ConfigureAwait(false);
 		}
 
-		/// <summary>
-		/// Removes a specific record from secure storage
-		/// </summary>
-		/// <param name="key">The key to wipe</param>
+		/// <inheritdoc/>
 		public async Task RemoveAsync(string key)
 		{
 			while (IsBusy)

@@ -11,6 +11,7 @@
 			_cryptoHelperFactory = cryptoHelperFactory;
 		}
 
+		/// <inheritdoc/>
 		public async Task<bool> IsPasswordRightAsync(string allegedPw)
 		{
 			if (string.IsNullOrEmpty(allegedPw))

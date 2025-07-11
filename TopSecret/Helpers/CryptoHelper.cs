@@ -22,11 +22,7 @@ namespace TopSecret.Helpers
 			_deviceId = GetDeviceId() ?? string.Empty;
 		}
 
-		/// <summary>
-		/// Makes <paramref name="plainText"/> unreadable
-		/// </summary>
-		/// <param name="plainText">Garbage in</param>
-		/// <returns>Encrypted garbage out</returns>
+		/// <inheritdoc/>
 		public string Encrypt(string plainText)
 		{
 			try
@@ -50,11 +46,7 @@ namespace TopSecret.Helpers
 			}
 		}
 
-		/// <summary>
-		/// Turns <paramref name="cipherText"/> gibberish into readable text
-		/// </summary>
-		/// <param name="cipherText">Mystery text</param>
-		/// <returns>Readable text</returns>
+		/// <inheritdoc/>
 		public string Decrypt(string cipherText)
 		{
 			try

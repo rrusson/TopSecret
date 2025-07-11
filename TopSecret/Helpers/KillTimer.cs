@@ -16,9 +16,7 @@ namespace TopSecret.Helpers
             Reset();
         }
 
-        /// <summary>
-        /// Starts the timer
-        /// </summary>
+        /// <inheritdoc/>
         public void Reset()
         {
             _timer?.Stop();
