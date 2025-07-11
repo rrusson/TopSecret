@@ -3,7 +3,7 @@ using System.Text;
 
 namespace TopSecret.Helpers
 {
-	public class CryptoHelper
+	public class CryptoHelper : ICryptoHelper
 	{
 		private readonly byte[] _salt = Encoding.ASCII.GetBytes("Enter a unique salt value here.");
 		private readonly string _uniqueKey = "Enter a unique encryption key here.";
@@ -55,7 +55,7 @@ namespace TopSecret.Helpers
 		/// </summary>
 		/// <param name="cipherText">Mystery text</param>
 		/// <returns>Readable text</returns>
-		internal string Decrypt(string cipherText)
+		public string Decrypt(string cipherText)
 		{
 			try
 			{

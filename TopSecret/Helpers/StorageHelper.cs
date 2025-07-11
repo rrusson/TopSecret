@@ -4,14 +4,20 @@ namespace TopSecret.Helpers
 	/// <summary>
 	/// Class to handle secure storage operations with encryption and decryption
 	/// </summary>
-	internal class StorageHelper
+	public class StorageHelper : IStorageHelper
 	{
 		private int _isBusy;
+		private readonly ICryptoHelperFactory _cryptoHelperFactory;
+
+		public StorageHelper(ICryptoHelperFactory cryptoHelperFactory)
+		{
+			_cryptoHelperFactory = cryptoHelperFactory;
+		}
 
 		/// <summary>
 		/// Thread-safe property that indicates saving/removing items is in progress
 		/// </summary>
-		internal bool IsBusy
+		public bool IsBusy
 		{
 			get
 			{
@@ -27,7 +33,7 @@ namespace TopSecret.Helpers
 		/// Decrypts a value from secure storage
 		/// </summary>
 		/// <param name="key">Key for the record</param>
-		internal async Task<string?> LoadAsync(string key)
+		public async Task<string?> LoadAsync(string key)
 		{
 			while (IsBusy)
 			{
@@ -43,7 +49,7 @@ namespace TopSecret.Helpers
 				return null;
 			}
 
-			var crypto = new CryptoHelper(App.MasterPassword);
+			var crypto = _cryptoHelperFactory.CreateCryptoHelper(App.MasterPassword);
 			try
 			{
 				return crypto.Decrypt(value);
@@ -59,7 +65,7 @@ namespace TopSecret.Helpers
 		/// </summary>
 		/// <param name="key">Key for the record</param>
 		/// <param name="value">Value to store</param>
-		internal async Task SaveAsync(string key, string value)
+		public async Task SaveAsync(string key, string value)
 		{
 			while (IsBusy)
 			{
@@ -84,9 +90,9 @@ namespace TopSecret.Helpers
 		/// </summary>
 		/// <param name="key">Key for the record</param>
 		/// <param name="value">Value to store</param>
-		internal async Task SaveEncryptedAsync(string key, string value)
+		public async Task SaveEncryptedAsync(string key, string value)
 		{
-			var crypto = new CryptoHelper(App.MasterPassword);
+			var crypto = _cryptoHelperFactory.CreateCryptoHelper(App.MasterPassword);
 			string encrypted = crypto.Encrypt(value);
 
 			await SaveAsync(key, encrypted).ConfigureAwait(false);
@@ -96,7 +102,7 @@ namespace TopSecret.Helpers
 		/// Removes a specific record from secure storage
 		/// </summary>
 		/// <param name="key">The key to wipe</param>
-		internal async Task RemoveAsync(string key)
+		public async Task RemoveAsync(string key)
 		{
 			while (IsBusy)
 			{

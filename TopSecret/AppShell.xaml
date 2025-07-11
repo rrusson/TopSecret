@@ -7,8 +7,5 @@
     Shell.FlyoutBehavior="Disabled"
     Title="TopSecret">
 
-    <ShellContent
-        Title="[TOP SECRET]"
-        ContentTemplate="{DataTemplate local:LoginPage}"
-        Route="LoginPage" />
+    <!-- Content will be set programmatically in code-behind -->
 </Shell>

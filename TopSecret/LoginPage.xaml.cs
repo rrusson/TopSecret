@@ -4,10 +4,15 @@ namespace TopSecret;
 
 public partial class LoginPage : ContentPage
 {
-	public LoginPage()
+	private readonly ILoginHelper _loginHelper;
+	private readonly IKillTimer _killTimer;
+
+	public LoginPage(ILoginHelper loginHelper, IKillTimer killTimer)
 	{
+		_loginHelper = loginHelper;
+		_killTimer = killTimer;
 		InitializeComponent();
-		KillTimer.Instance.Reset();
+		_killTimer.Reset();
 		Password.Focus();
 	}
 
@@ -30,8 +35,7 @@ public partial class LoginPage : ContentPage
 
 	private async Task<bool> TestPasswordAsync()
 	{
-		var loginHelper = new LoginHelper();
-		bool isPwRight = await loginHelper.IsPasswordRightAsync(Password.Text).ConfigureAwait(true);
+		bool isPwRight = await _loginHelper.IsPasswordRightAsync(Password.Text).ConfigureAwait(true);
 
 		if (!isPwRight)
 		{
@@ -40,7 +44,16 @@ public partial class LoginPage : ContentPage
 
 		ErrorMessage.Text = string.Empty;
 
-		await Navigation.PushAsync(new BigListPage()).ConfigureAwait(true);
+		// Get the BigListPage from the service provider
+		var services = Application.Current?.Handler?.MauiContext?.Services;
+		if (services != null)
+		{
+			var bigListPage = services.GetService<BigListPage>();
+			if (bigListPage != null)
+			{
+				await Navigation.PushAsync(bigListPage).ConfigureAwait(true);
+			}
+		}
 
 		// Remove the login page from the Navigation stack so back button doesn't return to it
 		Navigation.RemovePage(this);

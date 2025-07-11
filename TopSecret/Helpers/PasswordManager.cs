@@ -4,32 +4,31 @@ namespace TopSecret.Helpers
 	/// <summary>
 	/// Loads and saves master password list (core functionality of the app)
 	/// </summary>
-	internal class PasswordManager
+	public class PasswordManager : IPasswordManager
 	{
 		// Constants for storage key naming consistency
 		private const object? AccountData = null;
 		private const object? MasterPassword = null;
-		private static readonly Lazy<PasswordManager> _lazyInstance = new(() => new PasswordManager(), isThreadSafe: true);
+		private readonly IDataHelper _dataHelper;
+		private readonly IStorageHelper _storageHelper;
+		private readonly ICryptoHelperFactory _cryptoHelperFactory;
 
 		/// <summary>
 		/// The collection of all account records
 		/// </summary>
 		public List<AccountRecord> Records { get; private set; } = [];
 
-		/// <summary>
-		/// Singleton for the app's core functionality
-		/// </summary>
-		public static PasswordManager Instance => _lazyInstance.Value;
-
-		private PasswordManager()
+		public PasswordManager(IDataHelper dataHelper, IStorageHelper storageHelper, ICryptoHelperFactory cryptoHelperFactory)
 		{
-			// Private CTOR for singleton
+			_dataHelper = dataHelper;
+			_storageHelper = storageHelper;
+			_cryptoHelperFactory = cryptoHelperFactory;
 		}
 
 		/// <summary>
 		/// Returns the (encrypted) master password or null if it hasn't been set
 		/// </summary>
-		internal async Task<string?> GetMasterPasswordAsync()
+		public async Task<string?> GetMasterPasswordAsync()
 		{
 			return await SecureStorage.Default.GetAsync(nameof(MasterPassword)).ConfigureAwait(true);
 		}
@@ -39,7 +38,7 @@ namespace TopSecret.Helpers
 		/// </summary>
 		/// <param name="record">Record</param>
 		/// <returns>False if record is missing</returns>
-		internal async Task<bool> UpdateRecord(AccountRecord record)
+		public async Task<bool> UpdateRecord(AccountRecord record)
 		{
 			if (record?.AccountName == null)
 			{
@@ -63,32 +62,54 @@ namespace TopSecret.Helpers
 		}
 
 		/// <summary>
+		/// Removes a record from the account data
+		/// </summary>
+		/// <param name="record">Record</param>
+		/// <returns>False on failure</returns>
+		public async Task<bool> DeleteRecord(AccountRecord? record)
+		{
+			if (record?.Id == null)
+			{
+				return false;
+			}
+
+			var match = Records.FirstOrDefault(r => r.Id == record.Id);
+
+			if (match == null)
+			{
+				return false;
+			}
+
+			Records.Remove(match);
+			await SaveAllRecordsAsync().ConfigureAwait(false);
+			return true;
+		}
+
+		/// <summary>
 		/// Encrypts and saves all records
 		/// </summary>
 		private async Task SaveAllRecordsAsync()
 		{
-			string serialized = DataHelper.SerializeAccountRecords(Records.Where(r => !string.IsNullOrWhiteSpace(r.AccountName)));
+			string serialized = _dataHelper.SerializeAccountRecords(Records.Where(r => !string.IsNullOrWhiteSpace(r.AccountName)));
 
 			if (string.IsNullOrEmpty(serialized))
 			{
 				return; // If we don't have records, don't bother storing encrypted emptiness
 			}
 
-			var storage = new StorageHelper();
-
-			while (storage.IsBusy)
+			while (_storageHelper.IsBusy)
 			{
 				await Task.Delay(50).ConfigureAwait(true);
 			}
 
-			await storage.SaveEncryptedAsync(nameof(AccountData), serialized).ConfigureAwait(true);
+			await _storageHelper.SaveEncryptedAsync(nameof(AccountData), serialized).ConfigureAwait(true);
 		}
 
 		/// <summary>
 		/// Updates the master password used to log in to the app and re-encrypts all records
 		/// </summary>
 		/// <param name="newPassword">New password to use</param>
-		internal async Task ChangeMasterPasswordAsync(string newPassword)
+		public async Task ChangeMasterPasswordAsync(string newPassword)
 		{
 			if (string.IsNullOrWhiteSpace(newPassword))
 			{
@@ -98,13 +119,12 @@ namespace TopSecret.Helpers
 			string? currentMasterPassword = App.MasterPassword;
 
 			// Encrypt the new master password
-			var crypto = new CryptoHelper(newPassword);
+			var crypto = _cryptoHelperFactory.CreateCryptoHelper(newPassword);
 			string encrypted = crypto.Encrypt(newPassword);
 
 			// Wipe and recreate the master password in secure storage
-			var storage = new StorageHelper();
-			await storage.RemoveAsync("MasterPassword").ConfigureAwait(true);
-			await storage.SaveAsync(nameof(MasterPassword), encrypted).ConfigureAwait(true);
+			await _storageHelper.RemoveAsync("MasterPassword").ConfigureAwait(true);
+			await _storageHelper.SaveAsync(nameof(MasterPassword), encrypted).ConfigureAwait(true);
 
 			// Set the new app master password that's used by StorageHelper to encrypt/decrypt all records
 			App.SetMasterPassword(encrypted);
@@ -125,8 +145,8 @@ namespace TopSecret.Helpers
 			catch (Exception)
 			{
 				// Rollback MasterPassword to the previous value if saving records failed
-				await storage.RemoveAsync("MasterPassword").ConfigureAwait(true);
-				await storage.SaveAsync(nameof(MasterPassword), currentMasterPassword!).ConfigureAwait(true);
+				await _storageHelper.RemoveAsync("MasterPassword").ConfigureAwait(true);
+				await _storageHelper.SaveAsync(nameof(MasterPassword), currentMasterPassword!).ConfigureAwait(true);
 				App.SetMasterPassword(encrypted);
 				throw new InvalidOperationException("Master password encryption failed. Please try again.");
 			}
@@ -135,17 +155,16 @@ namespace TopSecret.Helpers
 		/// <summary>
 		/// Gets all decrypted records
 		/// </summary>
-		internal async Task PopulateRecordsAsync()
+		public async Task PopulateRecordsAsync()
 		{
-			var storage = new StorageHelper();
-			string? serializedGarbage = await storage.LoadAsync(nameof(AccountData)).ConfigureAwait(false);
+			string? serializedGarbage = await _storageHelper.LoadAsync(nameof(AccountData)).ConfigureAwait(false);
 
 			if (string.IsNullOrWhiteSpace(serializedGarbage))
 			{
 				return;
 			}
 
-			Records = DataHelper.DeserializeAccountRecords(serializedGarbage).ToList();
+			Records = _dataHelper.DeserializeAccountRecords(serializedGarbage).ToList();
 		}
 	}
 }

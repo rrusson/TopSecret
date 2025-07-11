@@ -9,6 +9,8 @@ public partial class AccountEditor : BasePage
 {
 	private bool _isExistingRecord;
 	private AccountRecord? _record;
+	private readonly IPasswordManager _passwordManager;
+	private readonly IDataHelper _dataHelper;
 
 	public bool IsExistingRecord
 	{
@@ -41,16 +43,22 @@ public partial class AccountEditor : BasePage
 
 	public ICommand SaveCommand { get; set; }
 
-	public AccountEditor(AccountRecord record) : base()
+	public AccountEditor(IPasswordManager passwordManager, IDataHelper dataHelper) : base()
 	{
-		Record = record;
-		IsExistingRecord = !string.IsNullOrEmpty(record.AccountName);
+		_passwordManager = passwordManager;
+		_dataHelper = dataHelper;
 		
 		CloneCommand = new Command(async () => await CloneRecord());
 		DeleteCommand = new Command(async () => await DeleteRecord());
 		SaveCommand = new Command(async () => await SaveRecord());
 		ListCommand = new Command(async () => await Navigation.PopAsync());
 		BindingContext = this;
+	}
+
+	public void SetRecord(AccountRecord record)
+	{
+		Record = record;
+		IsExistingRecord = !string.IsNullOrEmpty(record.AccountName);
 	}
 
 	private async Task CloneRecord()
@@ -74,7 +82,7 @@ public partial class AccountEditor : BasePage
 	{
 		try
 		{
-			_ = await DataHelper.DeleteRecord(record: Record).ConfigureAwait(true);
+			_ = await _passwordManager.DeleteRecord(record: Record).ConfigureAwait(true);
 			await Navigation.PopAsync().ConfigureAwait(true);
 		}
 		catch (Exception ex)
@@ -100,7 +108,7 @@ public partial class AccountEditor : BasePage
 
 		try
 		{
-			if (await PasswordManager.Instance.UpdateRecord(Record).ConfigureAwait(true))
+			if (await _passwordManager.UpdateRecord(Record).ConfigureAwait(true))
 			{
 				IsExistingRecord = true;
 				await Navigation.PopAsync().ConfigureAwait(true);

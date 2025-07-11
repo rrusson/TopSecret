@@ -6,29 +6,14 @@ namespace TopSecret.Helpers
 	/// <summary>
 	/// Class that kills the app if it's been idle too long
 	/// </summary>
-	internal class KillTimer : IDisposable
+	public class KillTimer : IKillTimer
     {
-        private static KillTimer? _singletonTimer;
-
         private System.Timers.Timer? _timer;
         private const double _minutesToTimeout = 3;
 
-        internal static DateTime LastTimeOfReset { get; set; }
+        public static DateTime LastTimeOfReset { get; set; }
 
-        /// <summary>
-        /// Singleton for the app's auto-timeout
-        /// </summary>
-        public static KillTimer Instance
-        {
-            get
-            {
-				//Create the singleton instance with default timeout of 3 minutes, if MinutesToTimeout wasn't pre-set
-				_singletonTimer ??= new KillTimer();
-				return _singletonTimer;
-            }
-        }
-
-        private KillTimer()
+        public KillTimer()
         {
             Reset();
         }
