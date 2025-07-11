@@ -1,26 +1,36 @@
 ﻿namespace TopSecret.Helpers
 {
-	internal class LoginHelper
+	public class LoginHelper : ILoginHelper
 	{
-		internal async Task<bool> IsPasswordRightAsync(string allegedPw)
+		private readonly IPasswordManager _passwordManager;
+		private readonly ICryptoHelperFactory _cryptoHelperFactory;
+
+		public LoginHelper(IPasswordManager passwordManager, ICryptoHelperFactory cryptoHelperFactory)
+		{
+			_passwordManager = passwordManager;
+			_cryptoHelperFactory = cryptoHelperFactory;
+		}
+
+		/// <inheritdoc/>
+		public async Task<bool> IsPasswordRightAsync(string allegedPw)
 		{
 			if (string.IsNullOrEmpty(allegedPw))
 			{
 				return false;
 			}
 
-			var masterPw = await PasswordManager.Instance.GetMasterPasswordAsync().ConfigureAwait(false);
+			var masterPw = await _passwordManager.GetMasterPasswordAsync().ConfigureAwait(false);
 
 			if (string.IsNullOrWhiteSpace(masterPw))
 			{
 				// If there's no master password, this is first use, so set the master password
-				await PasswordManager.Instance.ChangeMasterPasswordAsync(allegedPw).ConfigureAwait(false);
+				await _passwordManager.ChangeMasterPasswordAsync(allegedPw).ConfigureAwait(false);
 				await SecureStorage.Default.SetAsync("badAttempts", "0").ConfigureAwait(false);
 				return true;
 			}
 
 			// Compare encrypted alleged password to the stored master password (which was also encrypted when saved)			
-			var crypto = new CryptoHelper(allegedPw);
+			var crypto = _cryptoHelperFactory.CreateCryptoHelper(allegedPw);
 			var encryptedAlleged = crypto.Encrypt(allegedPw);
 
 			if (encryptedAlleged.Equals(masterPw, StringComparison.InvariantCulture))

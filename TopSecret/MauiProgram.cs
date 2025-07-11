@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using TopSecret.Helpers;
 
@@ -18,12 +19,23 @@ namespace TopSecret
 					fonts.AddFont("fa_solid.ttf", "FontAwesome");
 				});
 
+			// Register services for dependency injection
+			builder.Services.AddSingleton<ICryptoHelperFactory, CryptoHelperFactory>();
+			builder.Services.AddSingleton<IDataHelper, DataHelper>();
+			builder.Services.AddSingleton<IStorageHelper, StorageHelper>();
+			builder.Services.AddSingleton<IPasswordManager, PasswordManager>();
+			builder.Services.AddSingleton<ILoginHelper, LoginHelper>();
+			builder.Services.AddSingleton<IKillTimer, KillTimer>();
+
+			// Register pages - using transient so we get new instances each time
+			builder.Services.AddTransient<LoginPage>();
+			builder.Services.AddTransient<BigListPage>();
+			builder.Services.AddTransient<AccountEditor>();
+
 #if DEBUG
 			builder.Logging.AddDebug();
 #endif
 
-			// Consider removing singleton pattern from KillTimer and PasswordManager; updating to use Dependency Injection instead
-			//builder.Services.AddSingleton<KillTimer>();
 			return builder.Build();
 		}
 	}

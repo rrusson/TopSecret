@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using TopSecret.Helpers;
 
 namespace TopSecret;
@@ -7,6 +8,8 @@ public partial class BasePage : ContentPage
 	public BasePage()
 	{
 		InitializeComponent();
-		KillTimer.Instance.Reset();
+		// Reset the kill timer when any page is loaded
+		var killTimer = Application.Current?.Handler?.MauiContext?.Services?.GetService<IKillTimer>();
+		killTimer?.Reset();
 	}
 }

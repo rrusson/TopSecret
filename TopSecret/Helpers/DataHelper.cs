@@ -2,16 +2,10 @@
 
 namespace TopSecret.Helpers
 {
-	internal static class DataHelper
+	public class DataHelper : IDataHelper
 	{
-		private const string _accountDataKey = "AccountData";
-
-		/// <summary>
-		/// Deserializes <paramref name="acctData"/> into a collection of Account Records
-		/// </summary>
-		/// <param name="acctData">A string of data to parse into Account Records</param>
-		/// <returns>Deserialized Account Records</returns>
-		internal static IEnumerable<AccountRecord> DeserializeAccountRecords(string? acctData)
+		/// <inheritdoc/>
+		public IEnumerable<AccountRecord> DeserializeAccountRecords(string? acctData)
 		{
 			if (string.IsNullOrEmpty(acctData))
 			{
@@ -29,12 +23,8 @@ namespace TopSecret.Helpers
 			}
 		}
 
-		/// <summary>
-		/// Serializes a collection of accounts to text to prepare it for encryption
-		/// </summary>
-		/// <param name="records">A list of AccountRecords</param>
-		/// <returns>Serialized records separated with tabs and return characters</returns>
-		internal static string SerializeAccountRecords(IEnumerable<AccountRecord> records)
+		/// <inheritdoc/>
+		public string SerializeAccountRecords(IEnumerable<AccountRecord> records)
 		{
 			var builder = new StringBuilder(records.Count() * 100);
 
@@ -45,65 +35,6 @@ namespace TopSecret.Helpers
 			}
 
 			return builder.ToString();
-		}
-
-		/// <summary>
-		/// Removes a record from the account data
-		/// </summary>
-		/// <param name="record">Record</param>
-		/// <returns>False on failure</returns>
-		internal static async Task<bool> DeleteRecord(AccountRecord? record)
-		{
-			if (record?.Id == null)
-			{
-				return false;
-			}
-
-			List<AccountRecord> allData = PasswordManager.Instance.Records;
-
-			var match = allData.FirstOrDefault(r => r.Id == record.Id);
-
-			if (match == null)
-			{
-				return false;
-			}
-
-			allData.Remove(match);
-			string records = SerializeAccountRecords(allData);
-
-			await new StorageHelper().SaveEncryptedAsync(key: _accountDataKey, value: records).ConfigureAwait(false);
-			return true;
-		}
-
-		/// <summary>
-		/// Updates or inserts a record into the account data
-		/// </summary>
-		/// <param name="record">Record</param>
-		/// <returns>False if record is missing</returns>
-		internal static async Task<bool> UpdateRecord(AccountRecord? record)
-		{
-			if (record?.AccountName == null)
-			{
-				return false;
-			}
-
-			List<AccountRecord> allData = PasswordManager.Instance.Records;
-
-			var match = allData.FirstOrDefault(r => r.Id == record.Id);
-
-			if (match != null)
-			{
-				int index = allData.IndexOf(match);
-				allData[index] = record; // Update the existing record
-			}
-			else
-			{
-				allData.Add(record);
-			}
-
-			string records = SerializeAccountRecords(allData);
-			await new StorageHelper().SaveEncryptedAsync(key: _accountDataKey, value: records).ConfigureAwait(false);
-			return true;
 		}
 	}
 }

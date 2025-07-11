@@ -1,4 +1,5 @@
-﻿using TopSecret.Helpers;
+﻿using Microsoft.Extensions.DependencyInjection;
+using TopSecret.Helpers;
 
 namespace TopSecret
 {
@@ -36,6 +37,26 @@ namespace TopSecret
 			MainPage = new AppShell();
 		}
 
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+			
+			// Set up the initial page using DI once the handler is available
+			if (Handler?.MauiContext?.Services != null && MainPage is AppShell shell)
+			{
+				var loginPage = Handler.MauiContext.Services.GetService<LoginPage>();
+				if (loginPage != null)
+				{
+					shell.CurrentItem = new ShellContent
+					{
+						Title = "[TOP SECRET]",
+						Content = loginPage,
+						Route = "LoginPage"
+					};
+				}
+			}
+		}
+
 		internal static void SetMasterPassword(string? password)
 		{
 			lock (_passwordLock)
@@ -51,7 +72,8 @@ namespace TopSecret
 		{
 			// Start timer here (automatically quits if user is idle too long)
 			base.OnStart();
-			KillTimer.Instance.Reset();
+			var killTimer = Handler?.MauiContext?.Services?.GetService<IKillTimer>();
+			killTimer?.Reset();
 		}
 
 		private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

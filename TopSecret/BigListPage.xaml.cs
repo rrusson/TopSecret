@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 
 using AsyncAwaitBestPractices;
+using Microsoft.Extensions.DependencyInjection;
 
 using TopSecret.Helpers;
 
@@ -12,6 +13,8 @@ public partial class BigListPage : ContentPage
 	private bool _isMasterPasswordVisible;
 	private List<AccountRecord> _records = [];
 	private readonly IKeyboardHelper _keyboardHelper;
+	private readonly IPasswordManager _passwordManager;
+	private readonly IKillTimer _killTimer;
 
 	public bool IsLoading
 	{
@@ -43,8 +46,10 @@ public partial class BigListPage : ContentPage
 		}
 	}
 
-	public BigListPage()
+	public BigListPage(IPasswordManager passwordManager, IKillTimer killTimer)
 	{
+		_passwordManager = passwordManager;
+		_killTimer = killTimer;
 		InitializeComponent();
 		_keyboardHelper = DependencyService.Get<IKeyboardHelper>();
 		BindingContext = this;
@@ -53,7 +58,7 @@ public partial class BigListPage : ContentPage
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		KillTimer.Instance.Reset();
+		_killTimer.Reset();
 
 		ToggleMasterPasswordVisibility(false);
 		_keyboardHelper?.HideKeyboard();
@@ -67,8 +72,8 @@ public partial class BigListPage : ContentPage
 
 		try
 		{
-			await PasswordManager.Instance.PopulateRecordsAsync().ConfigureAwait(true);
-			Records = [.. PasswordManager.Instance.Records.OrderBy(r => r.AccountName)];
+			await _passwordManager.PopulateRecordsAsync().ConfigureAwait(true);
+			Records = [.. _passwordManager.Records.OrderBy(r => r.AccountName)];
 		}
 		catch (Exception)
 		{
@@ -80,14 +85,34 @@ public partial class BigListPage : ContentPage
 
 	private void OnAddClicked(object sender, EventArgs e)
 	{
-		Navigation.PushAsync(new AccountEditor(new AccountRecord()));
+		// Get the AccountEditor from the service provider
+		var services = Application.Current?.Handler?.MauiContext?.Services;
+		if (services != null)
+		{
+			var accountEditor = services.GetService<AccountEditor>();
+			if (accountEditor != null)
+			{
+				accountEditor.SetRecord(new AccountRecord());
+				Navigation.PushAsync(accountEditor);
+			}
+		}
 	}
 
 	private void OnItemTapped(object sender, ItemTappedEventArgs e)
 	{
 		if (e.Item is AccountRecord record)
 		{
-			Navigation.PushAsync(new AccountEditor(record));
+			// Get the AccountEditor from the service provider
+			var services = Application.Current?.Handler?.MauiContext?.Services;
+			if (services != null)
+			{
+				var accountEditor = services.GetService<AccountEditor>();
+				if (accountEditor != null)
+				{
+					accountEditor.SetRecord(record);
+					Navigation.PushAsync(accountEditor);
+				}
+			}
 		}
 	}
 
@@ -125,7 +150,7 @@ public partial class BigListPage : ContentPage
 		try
 		{
 			App.SetMasterPassword(password: null);
-			await PasswordManager.Instance.ChangeMasterPasswordAsync(MasterPw.Text).ConfigureAwait(true);
+			await _passwordManager.ChangeMasterPasswordAsync(MasterPw.Text).ConfigureAwait(true);
 			ToggleMasterPasswordVisibility(false);
 			return;
 		}

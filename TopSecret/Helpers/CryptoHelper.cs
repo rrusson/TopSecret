@@ -3,7 +3,7 @@ using System.Text;
 
 namespace TopSecret.Helpers
 {
-	public class CryptoHelper
+	public class CryptoHelper : ICryptoHelper
 	{
 		private readonly byte[] _salt = Encoding.ASCII.GetBytes("Enter a unique salt value here.");
 		private readonly string _uniqueKey = "Enter a unique encryption key here.";
@@ -22,11 +22,7 @@ namespace TopSecret.Helpers
 			_deviceId = GetDeviceId() ?? string.Empty;
 		}
 
-		/// <summary>
-		/// Makes <paramref name="plainText"/> unreadable
-		/// </summary>
-		/// <param name="plainText">Garbage in</param>
-		/// <returns>Encrypted garbage out</returns>
+		/// <inheritdoc/>
 		public string Encrypt(string plainText)
 		{
 			try
@@ -50,12 +46,8 @@ namespace TopSecret.Helpers
 			}
 		}
 
-		/// <summary>
-		/// Turns <paramref name="cipherText"/> gibberish into readable text
-		/// </summary>
-		/// <param name="cipherText">Mystery text</param>
-		/// <returns>Readable text</returns>
-		internal string Decrypt(string cipherText)
+		/// <inheritdoc/>
+		public string Decrypt(string cipherText)
 		{
 			try
 			{
