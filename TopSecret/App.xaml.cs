@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using TopSecret.Helpers;
+﻿using TopSecret.Helpers;
 
 namespace TopSecret
 {
@@ -40,7 +39,7 @@ namespace TopSecret
 		protected override void OnHandlerChanged()
 		{
 			base.OnHandlerChanged();
-			
+
 			// Set up the initial page using DI once the handler is available
 			if (Handler?.MauiContext?.Services != null && MainPage is AppShell shell)
 			{

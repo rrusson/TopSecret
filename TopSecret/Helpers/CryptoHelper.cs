@@ -59,7 +59,7 @@ namespace TopSecret.Helpers
 
 				cryptoStream.Write(cipherTextBytes, 0, cipherTextBytes.Length);
 				cryptoStream.FlushFinalBlock(); // Ensure padding is properly handled
-				
+
 				return Encoding.Unicode.GetString(memoryStream.ToArray());
 			}
 			catch (FormatException)

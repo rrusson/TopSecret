@@ -1,7 +1,5 @@
-using System.ComponentModel;
 using System.Windows.Input;
 
-using Microsoft.Extensions.DependencyInjection;
 using TopSecret.Helpers;
 
 namespace TopSecret;
@@ -48,7 +46,7 @@ public partial class AccountEditor : BasePage
 	{
 		_passwordManager = passwordManager;
 		_dataHelper = dataHelper;
-		
+
 		CloneCommand = new Command(async () => await CloneRecord());
 		DeleteCommand = new Command(async () => await DeleteRecord());
 		SaveCommand = new Command(async () => await SaveRecord());
@@ -71,7 +69,7 @@ public partial class AccountEditor : BasePage
 
 		BindingContext = null; // Clear the binding context
 		Record = new AccountRecord("NEW", Record.UserName, Record.Password, string.Empty);
-		
+
 		// Set IsExistingRecord to false for the new cloned record
 		IsExistingRecord = false;
 
@@ -83,7 +81,7 @@ public partial class AccountEditor : BasePage
 	{
 		try
 		{
-			_ = await _passwordManager.DeleteRecord(Record.Id).ConfigureAwait(true);
+			_ = await _passwordManager.DeleteRecord(Record?.Id).ConfigureAwait(true);
 			await Navigation.PopAsync().ConfigureAwait(true);
 		}
 		catch (Exception ex)
