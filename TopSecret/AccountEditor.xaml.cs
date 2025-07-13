@@ -1,6 +1,7 @@
 using System.Windows.Input;
 
-using TopSecret.Helpers;
+using TopSecret.Core;
+using TopSecret.Core.Interfaces;
 
 namespace TopSecret;
 
@@ -9,7 +10,6 @@ public partial class AccountEditor : BasePage
 	private bool _isExistingRecord;
 	private AccountRecord? _record;
 	private readonly IPasswordManager _passwordManager;
-	private readonly IDataHelper _dataHelper;
 
 	public bool IsExistingRecord
 	{
@@ -34,18 +34,17 @@ public partial class AccountEditor : BasePage
 		}
 	}
 
-	public ICommand CloneCommand { get; set; }
+	public ICommand? CloneCommand { get; set; }
 
-	public ICommand DeleteCommand { get; set; }
+	public ICommand? DeleteCommand { get; set; }
 
-	public ICommand ListCommand { get; set; }
+	public ICommand? ListCommand { get; set; }
 
-	public ICommand SaveCommand { get; set; }
+	public ICommand? SaveCommand { get; set; }
 
-	public AccountEditor(IPasswordManager passwordManager, IDataHelper dataHelper) : base()
+	public AccountEditor(IPasswordManager passwordManager, IKillTimer killTimer) : base(killTimer)
 	{
 		_passwordManager = passwordManager;
-		_dataHelper = dataHelper;
 
 		CloneCommand = new Command(async () => await CloneRecord());
 		DeleteCommand = new Command(async () => await DeleteRecord());
@@ -104,6 +103,7 @@ public partial class AccountEditor : BasePage
 		Record.AccountName = SanitizeInput(Record.AccountName);
 		Record.UserName = SanitizeInput(Record.UserName);
 		Record.Password = SanitizeInput(Record.Password);
+		Record.Url = SanitizeInput(Record.Url);
 
 		try
 		{
@@ -122,7 +122,7 @@ public partial class AccountEditor : BasePage
 		}
 	}
 
-	private string SanitizeInput(string input)
+	private string SanitizeInput(string? input)
 	{
 		if (string.IsNullOrWhiteSpace(input))
 		{

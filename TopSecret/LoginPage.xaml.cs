@@ -1,16 +1,17 @@
-using TopSecret.Helpers;
+using TopSecret.Core.Interfaces;
 
 namespace TopSecret;
 
 public partial class LoginPage : ContentPage
 {
 	private readonly ILoginHelper _loginHelper;
-	private readonly IKillTimer _killTimer;
+	private readonly IMasterPasswordProvider _passwordManager;
 
-	public LoginPage(ILoginHelper loginHelper, IKillTimer killTimer)
+	public LoginPage(ILoginHelper loginHelper, IMasterPasswordProvider passwordManager)
 	{
 		_loginHelper = loginHelper;
-		_killTimer = killTimer;
+		_passwordManager = passwordManager;
+
 		InitializeComponent();
 		Password.Focus();
 	}
@@ -25,11 +26,15 @@ public partial class LoginPage : ContentPage
 
 		bool isPasswordRight = await TestPasswordAsync().ConfigureAwait(true);
 
-		if (!isPasswordRight)
+		if (isPasswordRight)
 		{
-			Password.Text = "";
-			ErrorMessage.Text = "Nope. (Data is wiped after 10 failures.)";
+			await SecureStorage.Default.SetAsync("badAttempts", "0").ConfigureAwait(false);
+			return;
 		}
+
+		Password.Text = "";
+		ErrorMessage.Text = "Nope. (Data is wiped after 10 failures.)";
+		await HandleFailedAttemptAsync().ConfigureAwait(true);
 	}
 
 	private async Task<bool> TestPasswordAsync()
@@ -57,5 +62,29 @@ public partial class LoginPage : ContentPage
 		// Remove the login page from the Navigation stack so back button doesn't return to it
 		Navigation.RemovePage(this);
 		return true;
+	}
+
+	/// <summary>
+	/// Checks number of failed attempts and permanently erases EVERYTHING if too many
+	/// </summary>
+	private async Task HandleFailedAttemptAsync()
+	{
+		string? badAttempts = await SecureStorage.Default.GetAsync(nameof(badAttempts)).ConfigureAwait(true) ?? "0";
+
+		if (!int.TryParse(badAttempts, out int attempts) || attempts > 10)
+		{
+			// Too many failed attempts, erase the entire database (Nuclear Option)
+			SecureStorage.Default.RemoveAll();
+			ErrorMessage.Text = "GAME OVER. All data removed.";
+			return;
+		}
+
+		await SecureStorage.Default.SetAsync(nameof(badAttempts), (++attempts).ToString()).ConfigureAwait(false);
+
+		if (attempts > 5)
+		{
+			// Beyond 5 failed attempts, punish the user as a warning
+			Application.Current?.Quit();
+		}
 	}
 }

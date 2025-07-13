@@ -1,7 +1,7 @@
 ﻿using Android.Content;
 using Android.Views.InputMethods;
 
-using TopSecret.Helpers;
+using TopSecret.Core.Interfaces;
 
 namespace TopSecret.Platforms.Android
 {

@@ -1,4 +1,4 @@
-﻿namespace TopSecret.Helpers
+﻿namespace TopSecret.Core.Interfaces
 {
 	public interface IKeyboardHelper
 	{

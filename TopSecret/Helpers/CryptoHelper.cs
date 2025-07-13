@@ -1,5 +1,7 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
+
+using TopSecret.Core.Interfaces;
 
 namespace TopSecret.Helpers
 {
@@ -10,10 +12,6 @@ namespace TopSecret.Helpers
 		private readonly string _masterPw;  // This is the master password used for all encryption/decryption
 		private readonly string _deviceId;
 
-		/// <summary>
-		/// Default CTOR
-		/// </summary>
-		/// <exception cref="InvalidOperationException">Thrown if master password isn't set</exception>
 		public CryptoHelper(string? password)
 		{
 			ArgumentNullException.ThrowIfNull(password);
@@ -22,7 +20,6 @@ namespace TopSecret.Helpers
 			_deviceId = GetDeviceId() ?? string.Empty;
 		}
 
-		/// <inheritdoc/>
 		public string Encrypt(string plainText)
 		{
 			try
@@ -41,12 +38,10 @@ namespace TopSecret.Helpers
 			}
 			catch (CryptographicException ex)
 			{
-				// Preserve the original exception but add more context
 				throw new CryptographicException("Failed to encrypt data. This may be caused by using different encryption parameters or corrupted data.", ex);
 			}
 		}
 
-		/// <inheritdoc/>
 		public string Decrypt(string cipherText)
 		{
 			try
@@ -58,7 +53,7 @@ namespace TopSecret.Helpers
 				using var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Write);
 
 				cryptoStream.Write(cipherTextBytes, 0, cipherTextBytes.Length);
-				cryptoStream.FlushFinalBlock(); // Ensure padding is properly handled
+				cryptoStream.FlushFinalBlock();
 
 				return Encoding.Unicode.GetString(memoryStream.ToArray());
 			}
@@ -68,14 +63,10 @@ namespace TopSecret.Helpers
 			}
 			catch (CryptographicException ex)
 			{
-				// Preserve the original exception but add more context
 				throw new CryptographicException("Failed to decrypt data. This may be caused by using different encryption parameters or corrupted data.", ex);
 			}
 		}
 
-		/// <summary>
-		/// Creates a new AES object with a unique key
-		/// </summary>
 		private Aes GetAes()
 		{
 			Aes aes = Aes.Create();
@@ -98,7 +89,7 @@ namespace TopSecret.Helpers
 #if ANDROID
 	return Android.Provider.Settings.Secure.GetString(Platform.CurrentActivity?.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
 #elif IOS
-	return UIKit.UIDevice.CurrentDevice.IdentifierForVendor.ToString();
+			return UIKit.UIDevice.CurrentDevice.IdentifierForVendor.ToString();
 #elif WINDOWS
 	return Windows.System.Profile.SystemIdentification.GetSystemIdForPublisher().Id.ToString();
 #elif WINDOWS_UWP
