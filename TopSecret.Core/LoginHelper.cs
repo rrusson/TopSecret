@@ -21,20 +21,27 @@ namespace TopSecret.Core
 				return false;
 			}
 
-			var masterPw = await _passwordManager.GetMasterPasswordAsync().ConfigureAwait(false);
+			// Get the stored master password from the password manager
+			string? actualPw = await _passwordManager.GetMasterPasswordAsync().ConfigureAwait(false);
 
-			if (string.IsNullOrWhiteSpace(masterPw))
+			if (string.IsNullOrWhiteSpace(actualPw))
 			{
 				// If there's no master password, this is first use, so set the master password
 				await _passwordManager.ChangeMasterPasswordAsync(allegedPw).ConfigureAwait(false);
 				return true;
 			}
 
-			// Compare encrypted alleged password to the stored master password (which was also encrypted when saved)			
+			// Compare encrypted alleged password to the stored master password (which was also encrypted when saved)
 			var crypto = _cryptoHelperFactory.CreateCryptoHelper(allegedPw);
 			var encryptedAlleged = crypto.Encrypt(allegedPw);
 
-			return encryptedAlleged.Equals(masterPw, StringComparison.InvariantCulture);
+			if (encryptedAlleged.Equals(actualPw, StringComparison.InvariantCulture))
+			{
+				_passwordManager.SetMasterPassword(actualPw);
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

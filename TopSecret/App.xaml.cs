@@ -1,5 +1,4 @@
 ﻿using TopSecret.Core.Interfaces;
-using TopSecret.Helpers;
 
 namespace TopSecret
 {
@@ -17,7 +16,7 @@ namespace TopSecret
 					return _masterPassword;
 				}
 			}
-			private set
+			set
 			{
 				lock (_passwordLock)
 				{
@@ -57,21 +56,13 @@ namespace TopSecret
 			}
 		}
 
-		internal static void SetMasterPassword(string? password)
-		{
-			lock (_passwordLock)
-			{
-				_masterPassword = password;
-			}
-		}
-
 		// Force quit app immediately if it sleeps
 		protected override void OnSleep() => Quit();
 
 		protected override void OnStart()
 		{
-			// Start timer here (automatically quits if user is idle too long)
 			base.OnStart();
+			// Start timer here (automatically quits if user is idle too long)
 			var killTimer = Handler?.MauiContext?.Services?.GetService<IKillTimer>();
 			killTimer?.Reset();
 		}

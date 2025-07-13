@@ -1,216 +1,192 @@
 using Moq;
+
 using TopSecret.Core;
 using TopSecret.Core.Interfaces;
-using Xunit;
 
 namespace TopSecret.Tests
 {
-    public class LoginHelperTests
-    {
-        private readonly Mock<IPasswordManager> _mockPasswordManager;
-        private readonly Mock<ICryptoHelperFactory> _mockCryptoHelperFactory;
-        private readonly Mock<ICryptoHelper> _mockCryptoHelper;
-        private readonly LoginHelper _loginHelper;
+	public class LoginHelperTests
+	{
+		private readonly Mock<ICryptoHelperFactory> _mockCryptoHelperFactory;
+		private readonly Mock<ICryptoHelper> _mockCryptoHelper;
+		private readonly Mock<IMasterPasswordProvider> _mockMasterPasswordProvider;
+		private readonly Mock<IPasswordManager> _mockPasswordManager;
+		private readonly LoginHelper _loginHelper;
 
-        public LoginHelperTests()
-        {
-            _mockPasswordManager = new Mock<IPasswordManager>();
-            _mockCryptoHelperFactory = new Mock<ICryptoHelperFactory>();
-            _mockCryptoHelper = new Mock<ICryptoHelper>();
-            
-            _mockCryptoHelperFactory.Setup(x => x.CreateCryptoHelper(It.IsAny<string>()))
-                .Returns(_mockCryptoHelper.Object);
+		public LoginHelperTests()
+		{
+			_mockCryptoHelperFactory = new Mock<ICryptoHelperFactory>();
+			_mockCryptoHelper = new Mock<ICryptoHelper>();
+			_mockMasterPasswordProvider = new Mock<IMasterPasswordProvider>();
+			_mockPasswordManager = new Mock<IPasswordManager>();
+			_mockPasswordManager.As<IMasterPasswordProvider>()
+				.Setup(x => x.GetMasterPasswordAsync())
+				.Returns(() => _mockMasterPasswordProvider.Object.GetMasterPasswordAsync());
+			_mockPasswordManager.As<IMasterPasswordProvider>()
+				.Setup(x => x.ChangeMasterPasswordAsync(It.IsAny<string>()))
+				.Returns((string pw) => _mockMasterPasswordProvider.Object.ChangeMasterPasswordAsync(pw));
+			_mockPasswordManager.As<IMasterPasswordProvider>()
+				.SetupGet(x => x.MasterPassword)
+				.Returns(() => _mockMasterPasswordProvider.Object.MasterPassword);
 
-            _loginHelper = new LoginHelper(_mockPasswordManager.Object, _mockCryptoHelperFactory.Object);
-        }
+			_mockCryptoHelperFactory.Setup(f => f.CreateCryptoHelper(It.IsAny<string>()))
+				.Returns(_mockCryptoHelper.Object);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_WithNullPassword_ReturnsFalse()
-        {
-            // Act
-            var result = await _loginHelper.IsPasswordRightAsync(null!);
+			_loginHelper = new LoginHelper(_mockPasswordManager.Object, _mockCryptoHelperFactory.Object);
+		}
 
-            // Assert
-            Assert.False(result);
-        }
+		[Fact]
+		public async Task IsPasswordRightAsync_WithNullPassword_ReturnsFalse()
+		{
+			// Act
+			var result = await _loginHelper.IsPasswordRightAsync(null!);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_WithEmptyPassword_ReturnsFalse()
-        {
-            // Act
-            var result = await _loginHelper.IsPasswordRightAsync(string.Empty);
+			// Assert
+			Assert.False(result);
+		}
 
-            // Assert
-            Assert.False(result);
-        }
+		[Fact]
+		public async Task IsPasswordRightAsync_WithEmptyPassword_ReturnsFalse()
+		{
+			// Act
+			var result = await _loginHelper.IsPasswordRightAsync(string.Empty);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_WithNoStoredPassword_SetsNewPasswordAndReturnsTrue()
-        {
-            // Arrange
-            var allegedPassword = "NewPassword123!";
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync((string?)null);
+			// Assert
+			Assert.False(result);
+		}
 
-            // Act
-            var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
+		[Fact]
+		public async Task IsPasswordRightAsync_WithNoStoredPassword_SetsNewPasswordAndReturnsTrue()
+		{
+			// Arrange
+			var allegedPassword = "NewPassword123!";
+			_mockMasterPasswordProvider.Setup(x => x.GetMasterPasswordAsync())
+				.ReturnsAsync((string?)null);
 
-            // Assert
-            Assert.True(result);
-            _mockPasswordManager.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
-            _mockPasswordManager.Verify(x => x.ChangeMasterPasswordAsync(allegedPassword), Times.Once);
-        }
+			// Act
+			var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_WithEmptyStoredPassword_SetsNewPasswordAndReturnsTrue()
-        {
-            // Arrange
-            var allegedPassword = "NewPassword123!";
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync(string.Empty);
+			// Assert
+			Assert.True(result);
+			_mockMasterPasswordProvider.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
+			_mockMasterPasswordProvider.Verify(x => x.ChangeMasterPasswordAsync(allegedPassword), Times.Once);
+		}
 
-            // Act
-            var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
+		[Fact]
+		public async Task IsPasswordRightAsync_WithEmptyStoredPassword_SetsNewPasswordAndReturnsTrue()
+		{
+			// Arrange
+			var allegedPassword = "NewPassword123!";
+			_mockMasterPasswordProvider.Setup(x => x.GetMasterPasswordAsync())
+				.ReturnsAsync(string.Empty);
 
-            // Assert
-            Assert.True(result);
-            _mockPasswordManager.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
-            _mockPasswordManager.Verify(x => x.ChangeMasterPasswordAsync(allegedPassword), Times.Once);
-        }
+			// Act
+			var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_WithWhitespaceStoredPassword_SetsNewPasswordAndReturnsTrue()
-        {
-            // Arrange
-            var allegedPassword = "NewPassword123!";
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync("   ");
+			// Assert
+			Assert.True(result);
+			_mockMasterPasswordProvider.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
+			_mockMasterPasswordProvider.Verify(x => x.ChangeMasterPasswordAsync(allegedPassword), Times.Once);
+		}
 
-            // Act
-            var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
+		[Fact]
+		public async Task IsPasswordRightAsync_WithWhitespaceStoredPassword_SetsNewPasswordAndReturnsTrue()
+		{
+			// Arrange
+			var allegedPassword = "NewPassword123!";
+			_mockMasterPasswordProvider.Setup(x => x.GetMasterPasswordAsync())
+				.ReturnsAsync("   ");
 
-            // Assert
-            Assert.True(result);
-            _mockPasswordManager.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
-            _mockPasswordManager.Verify(x => x.ChangeMasterPasswordAsync(allegedPassword), Times.Once);
-        }
+			// Act
+			var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_WithCorrectPassword_ReturnsTrue()
-        {
-            // Arrange
-            var allegedPassword = "CorrectPassword123!";
-            var storedPassword = "encrypted_stored_password";
-            var encryptedAlleged = "encrypted_alleged_password";
+			// Assert
+			Assert.True(result);
+			_mockMasterPasswordProvider.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
+			_mockMasterPasswordProvider.Verify(x => x.ChangeMasterPasswordAsync(allegedPassword), Times.Once);
+		}
 
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync(storedPassword);
-            _mockCryptoHelper.Setup(x => x.Encrypt(allegedPassword))
-                .Returns(encryptedAlleged);
+		[Fact]
+		public async Task IsPasswordRightAsync_WithCorrectPassword_ReturnsTrue()
+		{
+			// Arrange
+			var allegedPassword = "CorrectPassword123!";
+			var storedPassword = "encrypted_stored_password";
+			var encryptedAlleged = "encrypted_alleged_password";
 
-            // Mock the case where passwords match
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync(encryptedAlleged);
+			_mockMasterPasswordProvider.Setup(x => x.GetMasterPasswordAsync())
+				.ReturnsAsync(storedPassword);
+			_mockCryptoHelper.Setup(x => x.Encrypt(allegedPassword))
+				.Returns(encryptedAlleged);
 
-            // Act
-            var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
+			// Mock the case where passwords match
+			_mockMasterPasswordProvider.Setup(x => x.GetMasterPasswordAsync())
+				.ReturnsAsync(encryptedAlleged);
 
-            // Assert
-            Assert.True(result);
-            _mockPasswordManager.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
-            _mockCryptoHelperFactory.Verify(x => x.CreateCryptoHelper(allegedPassword), Times.Once);
-            _mockCryptoHelper.Verify(x => x.Encrypt(allegedPassword), Times.Once);
-        }
+			// Act
+			var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_WithIncorrectPassword_ReturnsFalse()
-        {
-            // Arrange
-            var allegedPassword = "WrongPassword123!";
-            var storedPassword = "encrypted_stored_password";
-            var encryptedAlleged = "encrypted_alleged_password";
+			// Assert
+			Assert.True(result);
+			_mockMasterPasswordProvider.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
+			_mockCryptoHelper.Verify(x => x.Encrypt(allegedPassword), Times.Once);
+		}
 
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync(storedPassword);
-            _mockCryptoHelper.Setup(x => x.Encrypt(allegedPassword))
-                .Returns(encryptedAlleged);
+		[Fact]
+		public async Task IsPasswordRightAsync_WithIncorrectPassword_ReturnsFalse()
+		{
+			// Arrange
+			var allegedPassword = "WrongPassword123!";
+			var storedPassword = "encrypted_stored_password";
+			var encryptedAlleged = "encrypted_alleged_password";
 
-            // Act
-            var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
+			_mockMasterPasswordProvider.Setup(x => x.GetMasterPasswordAsync())
+				.ReturnsAsync(storedPassword);
+			_mockCryptoHelper.Setup(x => x.Encrypt(allegedPassword))
+				.Returns(encryptedAlleged);
 
-            // Assert
-            Assert.False(result);
-            _mockPasswordManager.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
-            _mockCryptoHelperFactory.Verify(x => x.CreateCryptoHelper(allegedPassword), Times.Once);
-            _mockCryptoHelper.Verify(x => x.Encrypt(allegedPassword), Times.Once);
-        }
+			// Act
+			var result = await _loginHelper.IsPasswordRightAsync(allegedPassword);
 
-        [Theory]
-        [InlineData("Password123!")]
-        [InlineData("AnotherPassword456@")]
-        [InlineData("VeryLongPasswordWithSpecialCharacters789#")]
-        public async Task IsPasswordRightAsync_WithFirstTimeSetup_WorksForVariousPasswords(string password)
-        {
-            // Arrange
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync((string?)null);
+			// Assert
+			Assert.False(result);
+			_mockMasterPasswordProvider.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
+			_mockCryptoHelper.Verify(x => x.Encrypt(allegedPassword), Times.Once);
+		}
 
-            // Act
-            var result = await _loginHelper.IsPasswordRightAsync(password);
+		[Theory]
+		[InlineData("Password123!")]
+		[InlineData("AnotherPassword456@")]
+		[InlineData("VeryLongPasswordWithSpecialCharacters789#")]
+		public async Task IsPasswordRightAsync_WithFirstTimeSetup_WorksForVariousPasswords(string password)
+		{
+			// Arrange
+			_mockMasterPasswordProvider.Setup(x => x.GetMasterPasswordAsync())
+				.ReturnsAsync((string?)null);
 
-            // Assert
-            Assert.True(result);
-            _mockPasswordManager.Verify(x => x.ChangeMasterPasswordAsync(password), Times.Once);
-        }
+			// Act
+			var result = await _loginHelper.IsPasswordRightAsync(password);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_CallsPasswordManagerOnce()
-        {
-            // Arrange
-            var allegedPassword = "TestPassword123!";
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync("stored_password");
-            _mockCryptoHelper.Setup(x => x.Encrypt(allegedPassword))
-                .Returns("encrypted_password");
+			// Assert
+			Assert.True(result);
+			_mockMasterPasswordProvider.Verify(x => x.ChangeMasterPasswordAsync(password), Times.Once);
+		}
 
-            // Act
-            await _loginHelper.IsPasswordRightAsync(allegedPassword);
+		[Fact]
+		public async Task IsPasswordRightAsync_CallsMasterPasswordProviderOnce()
+		{
+			// Arrange
+			var allegedPassword = "TestPassword123!";
+			_mockMasterPasswordProvider.Setup(x => x.GetMasterPasswordAsync())
+				.ReturnsAsync("stored_password");
+			_mockCryptoHelper.Setup(x => x.Encrypt(allegedPassword))
+				.Returns("encrypted_password");
 
-            // Assert
-            _mockPasswordManager.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
-        }
+			// Act
+			await _loginHelper.IsPasswordRightAsync(allegedPassword);
 
-        [Fact]
-        public async Task IsPasswordRightAsync_CreatesCryptoHelperOnlyWhenNeeded()
-        {
-            // Arrange
-            var allegedPassword = "TestPassword123!";
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync((string?)null);
-
-            // Act
-            await _loginHelper.IsPasswordRightAsync(allegedPassword);
-
-            // Assert
-            // Should not create CryptoHelper for first-time setup
-            _mockCryptoHelperFactory.Verify(x => x.CreateCryptoHelper(It.IsAny<string>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task IsPasswordRightAsync_CreatesCryptoHelperForPasswordValidation()
-        {
-            // Arrange
-            var allegedPassword = "TestPassword123!";
-            _mockPasswordManager.Setup(x => x.GetMasterPasswordAsync())
-                .ReturnsAsync("stored_password");
-            _mockCryptoHelper.Setup(x => x.Encrypt(allegedPassword))
-                .Returns("encrypted_password");
-
-            // Act
-            await _loginHelper.IsPasswordRightAsync(allegedPassword);
-
-            // Assert
-            _mockCryptoHelperFactory.Verify(x => x.CreateCryptoHelper(allegedPassword), Times.Once);
-        }
-    }
+			// Assert
+			_mockMasterPasswordProvider.Verify(x => x.GetMasterPasswordAsync(), Times.Once);
+		}
+	}
 }

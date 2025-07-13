@@ -17,9 +17,7 @@ namespace TopSecret.Core
 			_masterPasswordProvider = masterPasswordProvider;
 		}
 
-		/// <summary>
-		/// Thread-safe property that indicates saving/removing items is in progress
-		/// </summary>
+		/// <inheritdoc/>
 		public bool IsBusy
 		{
 			get
@@ -40,7 +38,7 @@ namespace TopSecret.Core
 				await Task.Delay(50); // Wait, so we don't show stale information
 			}
 
-			IsBusy = true;	// Prevent saving until we finish loading current data
+			IsBusy = true;  // Prevent saving until we finish loading current data
 			string? value = await GetSecureValueAsync(key).ConfigureAwait(false);
 
 			if (string.IsNullOrWhiteSpace(value))
@@ -49,10 +47,10 @@ namespace TopSecret.Core
 				return null;
 			}
 
-			var crypto = _cryptoHelperFactory.CreateCryptoHelper(_masterPasswordProvider.MasterPassword);
 			try
 			{
-				return crypto.Decrypt(value);
+				var cryptoHelper = _cryptoHelperFactory.CreateCryptoHelper(_masterPasswordProvider.MasterPassword);
+				return cryptoHelper.Decrypt(value);
 			}
 			finally
 			{
@@ -84,9 +82,8 @@ namespace TopSecret.Core
 		/// <inheritdoc/>
 		public async Task SaveEncryptedAsync(string key, string value)
 		{
-			var crypto = _cryptoHelperFactory.CreateCryptoHelper(_masterPasswordProvider.MasterPassword);
-			string encrypted = crypto.Encrypt(value);
-
+			var cryptoHelper = _cryptoHelperFactory.CreateCryptoHelper(_masterPasswordProvider.MasterPassword);
+			string encrypted = cryptoHelper.Encrypt(value);
 			await SaveAsync(key, encrypted).ConfigureAwait(false);
 		}
 

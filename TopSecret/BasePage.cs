@@ -1,17 +1,31 @@
-using Microsoft.Extensions.DependencyInjection;
-using TopSecret.Core;
 using TopSecret.Core.Interfaces;
-using TopSecret.Helpers;
 
 namespace TopSecret;
 
+/// <summary>
+/// A base class for all pages in the application. Manages the kill timer.
+/// </summary>
 public partial class BasePage : ContentPage
 {
+	private readonly IKillTimer? _killTimer = Application.Current?.Handler?.MauiContext?.Services?.GetService<IKillTimer>();
+
+
 	public BasePage()
 	{
 		InitializeComponent();
+	}
+
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+
 		// Reset the kill timer when any page is loaded
-		var killTimer = Application.Current?.Handler?.MauiContext?.Services?.GetService<IKillTimer>();
-		killTimer?.Reset();
+		_killTimer?.Reset();
+	}
+
+	protected override bool OnBackButtonPressed()
+	{
+		// Don't allow back navigation
+		return true;
 	}
 }

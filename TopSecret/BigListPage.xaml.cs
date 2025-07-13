@@ -1,21 +1,17 @@
 ﻿using System.Security.Cryptography;
 
-using AsyncAwaitBestPractices;
-
 using TopSecret.Core;
 using TopSecret.Core.Interfaces;
-using TopSecret.Helpers;
 
 namespace TopSecret;
 
-public partial class BigListPage : ContentPage
+public partial class BigListPage : BasePage
 {
 	private bool _isLoading;
 	private bool _isMasterPasswordVisible;
 	private List<AccountRecord> _records = [];
 	private readonly IKeyboardHelper _keyboardHelper;
 	private readonly IPasswordManager _passwordManager;
-	private readonly IKillTimer _killTimer;
 
 	public bool IsLoading
 	{
@@ -47,11 +43,10 @@ public partial class BigListPage : ContentPage
 		}
 	}
 
-	public BigListPage(IPasswordManager passwordManager, IKillTimer killTimer)
+	public BigListPage(IPasswordManager passwordManager, IMasterPasswordProvider masterPasswordProvider) : base()
 	{
-		_passwordManager = passwordManager;
-		_killTimer = killTimer;
 		InitializeComponent();
+		_passwordManager = passwordManager;
 		_keyboardHelper = DependencyService.Get<IKeyboardHelper>();
 		BindingContext = this;
 	}
@@ -59,7 +54,6 @@ public partial class BigListPage : ContentPage
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		_killTimer.Reset();
 
 		ToggleMasterPasswordVisibility(false);
 		_keyboardHelper?.HideKeyboard();
@@ -76,8 +70,9 @@ public partial class BigListPage : ContentPage
 			await _passwordManager.PopulateRecordsAsync().ConfigureAwait(true);
 			Records = [.. _passwordManager.Records.OrderBy(r => r.AccountName)];
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			Console.WriteLine($"Error loading account data: {ex.Message}");
 			await DisplayAlert("ERROR", "Unable to load account data. Please try again or reinstall.", "OK").ConfigureAwait(true);
 		}
 
@@ -128,14 +123,14 @@ public partial class BigListPage : ContentPage
 		ToggleMasterPasswordVisibility(true);
 	}
 
-	private void MasterPwChangeButtonClick(object sender, EventArgs e)
+	private async void MasterPwChangeButtonClick(object sender, EventArgs e)
 	{
 		if (string.IsNullOrWhiteSpace(MasterPw.Text))
 		{
 			return;
 		}
 
-		UpdateMasterPassword().SafeFireAndForget();
+		await UpdateMasterPassword().ConfigureAwait(true);
 	}
 
 	private async Task UpdateMasterPassword()
@@ -150,7 +145,6 @@ public partial class BigListPage : ContentPage
 
 		try
 		{
-			App.SetMasterPassword(password: null);
 			await _passwordManager.ChangeMasterPasswordAsync(MasterPw.Text).ConfigureAwait(true);
 			ToggleMasterPasswordVisibility(false);
 			return;
@@ -169,7 +163,7 @@ public partial class BigListPage : ContentPage
 		}
 
 		ToggleMasterPasswordVisibility(true);   // Show the password input in case of error so user can try again
-		App.SetMasterPassword(currentMasterPassword); // Reset to previous master password on failure
+		App.MasterPassword = currentMasterPassword; // Reset to previous master password on failure
 	}
 
 	private void ToggleMasterPasswordVisibility(bool isVisible)

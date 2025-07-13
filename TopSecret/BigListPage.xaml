@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-	x:Class="TopSecret.BigListPage"
+<local:BasePage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:local="clr-namespace:TopSecret"
-	Title="Account List">
+	Title="Account List"
+	x:Class="TopSecret.BigListPage">
 	<Grid>
 		<!-- Main Content -->
 		<VerticalStackLayout>
@@ -145,4 +145,4 @@
 			</VerticalStackLayout>
 		</Grid>
 	</Grid>
-</ContentPage>
+</local:BasePage>

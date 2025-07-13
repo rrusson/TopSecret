@@ -3,33 +3,66 @@ using TopSecret.Core.Interfaces;
 namespace TopSecret.Core
 {
 	/// <summary>
-	/// Loads and saves master password list (core functionality of the app)
+	/// Loads and saves passwords including master password (core functionality of the app)
 	/// </summary>
 	public class PasswordManager : IPasswordManager
 	{
-		// Constants for storage key naming consistency
+		// Constant for storage key naming consistency
 		private const string AccountDataKey = "AccountData";
-		private const string MasterPasswordKey = "MasterPassword";
 		private readonly IDataHelper _dataHelper;
+		private readonly IMasterPasswordProvider _masterPasswordProvider;
 		private readonly IStorageHelper _storageHelper;
-		private readonly ICryptoHelperFactory _cryptoHelperFactory;
 
-		/// <summary>
-		/// The collection of all account records
-		/// </summary>
+		/// <inheritdoc/>
 		public List<AccountRecord> Records { get; private set; } = [];
 
-		public PasswordManager(IDataHelper dataHelper, IStorageHelper storageHelper, ICryptoHelperFactory cryptoHelperFactory)
+		public PasswordManager(IDataHelper dataHelper, IMasterPasswordProvider masterPasswordProvider, IStorageHelper storageHelper)
 		{
 			_dataHelper = dataHelper;
+			_masterPasswordProvider = masterPasswordProvider;
 			_storageHelper = storageHelper;
-			_cryptoHelperFactory = cryptoHelperFactory;
+		}
+
+		// IMasterPasswordProvider forwarding methods (to ease use of tightly coupled MAUI app code in MasterPasswordProvider)
+
+		/// <inheritdoc/>
+		public string? MasterPassword => _masterPasswordProvider.MasterPassword;
+
+		/// <inheritdoc/>
+		public Task<string?> GetMasterPasswordAsync() => _masterPasswordProvider.GetMasterPasswordAsync();
+
+		/// <inheritdoc/>
+		public void SetMasterPassword(string encryptedPassword) => _masterPasswordProvider.SetMasterPassword(encryptedPassword);
+
+		public async Task ChangeMasterPasswordAsync(string newPassword)
+		{
+			string? oldMasterPassword = _masterPasswordProvider.MasterPassword;
+			await _masterPasswordProvider.ChangeMasterPasswordAsync(newPassword).ConfigureAwait(true);
+
+			try
+			{
+				// Resave all records with new (encrypted) master password
+				await SaveAllRecordsAsync().ConfigureAwait(true);
+			}
+			catch (Exception)
+			{
+				// Rollback MasterPassword to the previous value if saving records failed
+				_masterPasswordProvider.SetMasterPassword(oldMasterPassword!);
+				throw new InvalidOperationException("Master password encryption failed. Please try again.");
+			}
 		}
 
 		/// <inheritdoc/>
-		public async Task<string?> GetMasterPasswordAsync()
+		public async Task PopulateRecordsAsync()
 		{
-			return await _storageHelper.LoadAsync(MasterPasswordKey).ConfigureAwait(false);
+			string? serializedData = await _storageHelper.LoadAsync(AccountDataKey).ConfigureAwait(false);
+
+			if (string.IsNullOrWhiteSpace(serializedData))
+			{
+				return;
+			}
+
+			Records = [.. _dataHelper.DeserializeAccountRecords(serializedData)];
 		}
 
 		/// <inheritdoc/>
@@ -91,41 +124,6 @@ namespace TopSecret.Core
 			}
 
 			await _storageHelper.SaveEncryptedAsync(AccountDataKey, serialized).ConfigureAwait(false);
-		}
-
-		/// <inheritdoc/>
-		public async Task ChangeMasterPasswordAsync(string newPassword)
-		{
-			if (string.IsNullOrWhiteSpace(newPassword))
-			{
-				return;
-			}
-
-			// Encrypt the new master password
-			var crypto = _cryptoHelperFactory.CreateCryptoHelper(newPassword);
-			string encrypted = crypto.Encrypt(newPassword);
-
-			// Wipe and recreate the master password in secure storage
-			await _storageHelper.RemoveAsync(MasterPasswordKey).ConfigureAwait(false);
-			await _storageHelper.SaveAsync(MasterPasswordKey, encrypted).ConfigureAwait(false);
-
-			// Resave all records with new (encrypted) master password
-			await SaveAllRecordsAsync().ConfigureAwait(false);
-		}
-
-		/// <summary>
-		/// Gets all decrypted records
-		/// </summary>
-		public async Task PopulateRecordsAsync()
-		{
-			string? serializedData = await _storageHelper.LoadAsync(AccountDataKey).ConfigureAwait(false);
-
-			if (string.IsNullOrWhiteSpace(serializedData))
-			{
-				return;
-			}
-
-			Records = _dataHelper.DeserializeAccountRecords(serializedData).ToList();
 		}
 	}
 }

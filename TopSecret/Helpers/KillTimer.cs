@@ -1,5 +1,7 @@
 ﻿using System.Timers;
 
+using TopSecret.Core.Interfaces;
+
 namespace TopSecret.Helpers
 {
 	/// <summary>
