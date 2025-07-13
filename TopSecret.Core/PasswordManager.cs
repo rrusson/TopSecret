@@ -34,6 +34,7 @@ namespace TopSecret.Core
 		/// <inheritdoc/>
 		public void SetMasterPassword(string encryptedPassword) => _masterPasswordProvider.SetMasterPassword(encryptedPassword);
 
+		/// <inheritdoc/>
 		public async Task ChangeMasterPasswordAsync(string newPassword)
 		{
 			string? oldMasterPassword = _masterPasswordProvider.MasterPassword;

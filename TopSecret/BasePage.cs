@@ -7,13 +7,14 @@ namespace TopSecret;
 /// </summary>
 public partial class BasePage : ContentPage
 {
-	private readonly IKillTimer? _killTimer = Application.Current?.Handler?.MauiContext?.Services?.GetService<IKillTimer>();
+	private readonly IKillTimer? _killTimer;
 
-
-	public BasePage()
+	public BasePage(IKillTimer killTimer)
 	{
+		_killTimer = killTimer;
 		InitializeComponent();
 	}
+
 
 	protected override void OnAppearing()
 	{

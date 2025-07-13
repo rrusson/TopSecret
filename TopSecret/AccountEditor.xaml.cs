@@ -42,7 +42,7 @@ public partial class AccountEditor : BasePage
 
 	public ICommand? SaveCommand { get; set; }
 
-	public AccountEditor(IPasswordManager passwordManager) : base()
+	public AccountEditor(IPasswordManager passwordManager, IKillTimer killTimer) : base(killTimer)
 	{
 		_passwordManager = passwordManager;
 
