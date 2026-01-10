@@ -140,8 +140,7 @@ namespace TopSecret.Tests
 		public async Task DeleteRecord_WithNullId_ThrowsArgumentNullException()
 		{
 			// Act & Assert
-			await Assert.ThrowsAsync<ArgumentNullException>(
-				() => _passwordManager.DeleteRecord(null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => _passwordManager.DeleteRecord(null));
 		}
 
 		[Fact]
@@ -151,8 +150,8 @@ namespace TopSecret.Tests
 			var serializedData = "serialized_account_data";
 			var expectedRecords = new List<AccountRecord>
 			{
-				new AccountRecord("Account1", "User1", "Pass1", "Url1"),
-				new AccountRecord("Account2", "User2", "Pass2", "Url2")
+				new("Account1", "User1", "Pass1", "Url1"),
+				new("Account2", "User2", "Pass2", "Url2")
 			};
 
 			_mockStorageHelper.Setup(x => x.LoadAsync("AccountData"))
