@@ -1,4 +1,8 @@
-﻿using TopSecret.Core.Interfaces;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+
+using TopSecret.Core.Interfaces;
 
 namespace TopSecret
 {

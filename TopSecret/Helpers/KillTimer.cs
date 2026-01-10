@@ -1,5 +1,8 @@
 ﻿using System.Timers;
 
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+
 using TopSecret.Core.Interfaces;
 
 namespace TopSecret.Helpers

@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using ObjCRuntime;
+using UIKit;
 
 namespace TopSecret.Platforms.MacCatalyst
 {

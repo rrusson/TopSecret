@@ -1,6 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
 
 using TopSecret.Core;
+using TopSecret.Core.Helpers;
 using TopSecret.Core.Interfaces;
 using TopSecret.Helpers;
 
@@ -10,8 +15,7 @@ namespace TopSecret
 	{
 		public static MauiApp CreateMauiApp()
 		{
-			var builder = MauiApp.CreateBuilder();
-			builder
+			var builder = MauiApp.CreateBuilder()
 				.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
@@ -33,6 +37,13 @@ namespace TopSecret
 			builder.Services.AddTransient<LoginPage>();
 			builder.Services.AddTransient<BigListPage>();
 			builder.Services.AddTransient<AccountEditor>();
+
+			// Register platform-specific services
+#if ANDROID
+			builder.Services.AddSingleton<IKeyboardHelper, Platforms.Android.AndroidKeyboardHelper>();
+#elif IOS
+			builder.Services.AddSingleton<IKeyboardHelper, Platforms.iOS.IosKeyboardHelper>();
+#endif
 
 #if DEBUG
 			builder.Logging.AddDebug();

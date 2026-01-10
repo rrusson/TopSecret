@@ -1,17 +1,23 @@
-﻿using System.Security.Cryptography;
+﻿using System.ComponentModel;
+using System.Security.Cryptography;
+
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
 
 using TopSecret.Core;
 using TopSecret.Core.Interfaces;
 
 namespace TopSecret;
 
-public partial class BigListPage : BasePage
+public partial class BigListPage : BasePage, INotifyPropertyChanged
 {
 	private bool _isLoading;
 	private bool _isMasterPasswordVisible;
 	private List<AccountRecord> _records = [];
-	private readonly IKeyboardHelper _keyboardHelper;
+	private readonly IKeyboardHelper? _keyboardHelper;
 	private readonly IPasswordManager _passwordManager;
+
+	public new event PropertyChangedEventHandler? PropertyChanged;
 
 	public bool IsLoading
 	{
@@ -43,12 +49,17 @@ public partial class BigListPage : BasePage
 		}
 	}
 
-	public BigListPage(IPasswordManager passwordManager, IMasterPasswordProvider masterPasswordProvider, IKillTimer killTimer) : base(killTimer)
+	public BigListPage(IPasswordManager passwordManager, IMasterPasswordProvider masterPasswordProvider, IKillTimer killTimer, IKeyboardHelper? keyboardHelper = null) : base(killTimer)
 	{
 		InitializeComponent();
 		_passwordManager = passwordManager;
-		_keyboardHelper = DependencyService.Get<IKeyboardHelper>();
+		_keyboardHelper = keyboardHelper;
 		BindingContext = this;
+	}
+
+	protected new void OnPropertyChanged(string propertyName)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 
 	protected override async void OnAppearing()
@@ -82,7 +93,7 @@ public partial class BigListPage : BasePage
 	private void OnAddClicked(object sender, EventArgs e)
 	{
 		// Get the AccountEditor from the service provider
-		var services = Application.Current?.Handler?.MauiContext?.Services;
+		var services = Handler?.MauiContext?.Services;
 		if (services != null)
 		{
 			var accountEditor = services.GetService<AccountEditor>();
@@ -99,7 +110,7 @@ public partial class BigListPage : BasePage
 		if (e.Item is AccountRecord record)
 		{
 			// Get the AccountEditor from the service provider
-			var services = Application.Current?.Handler?.MauiContext?.Services;
+			var services = Handler?.MauiContext?.Services;
 			if (services != null)
 			{
 				var accountEditor = services.GetService<AccountEditor>();

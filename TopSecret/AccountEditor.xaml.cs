@@ -1,15 +1,20 @@
+using System.ComponentModel;
 using System.Windows.Input;
+
+using Microsoft.Maui.Controls;
 
 using TopSecret.Core;
 using TopSecret.Core.Interfaces;
 
 namespace TopSecret;
 
-public partial class AccountEditor : BasePage
+public partial class AccountEditor : BasePage, INotifyPropertyChanged
 {
 	private bool _isExistingRecord;
 	private AccountRecord? _record;
 	private readonly IPasswordManager _passwordManager;
+
+	public new event PropertyChangedEventHandler? PropertyChanged;
 
 	public bool IsExistingRecord
 	{
@@ -46,11 +51,18 @@ public partial class AccountEditor : BasePage
 	{
 		_passwordManager = passwordManager;
 
+		InitializeComponent();
+
 		CloneCommand = new Command(async () => await CloneRecord());
 		DeleteCommand = new Command(async () => await DeleteRecord());
 		SaveCommand = new Command(async () => await SaveRecord());
 		ListCommand = new Command(async () => await Navigation.PopAsync());
 		BindingContext = this;
+	}
+
+	protected new void OnPropertyChanged(string propertyName)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 
 	public void SetRecord(AccountRecord record)
