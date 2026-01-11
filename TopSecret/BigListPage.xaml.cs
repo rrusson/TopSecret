@@ -6,7 +6,7 @@ using TopSecret.Core.Interfaces;
 
 namespace TopSecret;
 
-public partial class BigListPage : BasePage, INotifyPropertyChanged
+public partial class BigListPage : BasePage
 {
 	private bool _isLoading;
 	private bool _isMasterPasswordVisible;

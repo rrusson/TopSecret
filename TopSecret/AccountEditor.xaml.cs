@@ -6,7 +6,7 @@ using TopSecret.Core.Interfaces;
 
 namespace TopSecret;
 
-public partial class AccountEditor : BasePage, INotifyPropertyChanged
+public partial class AccountEditor : BasePage
 {
 	private bool _isExistingRecord;
 	private AccountRecord? _record;
@@ -45,9 +45,8 @@ public partial class AccountEditor : BasePage, INotifyPropertyChanged
 
 	public AccountEditor(IPasswordManager passwordManager, IKillTimer killTimer) : base(killTimer)
 	{
-		_passwordManager = passwordManager;
-
 		InitializeComponent();
+		_passwordManager = passwordManager;
 
 		CloneCommand = new Command(async () => await CloneRecord());
 		DeleteCommand = new Command(async () => await DeleteRecord());
