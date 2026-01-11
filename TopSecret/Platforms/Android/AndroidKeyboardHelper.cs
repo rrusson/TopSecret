@@ -1,9 +1,6 @@
 ﻿using Android.Content;
 using Android.Views.InputMethods;
 
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
 using TopSecret.Core.Interfaces;
 
 namespace TopSecret.Platforms.Android

@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace TopSecret
+﻿namespace TopSecret
 {
 	public partial class AppShell : Shell
 	{

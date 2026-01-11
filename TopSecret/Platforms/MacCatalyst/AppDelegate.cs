@@ -1,8 +1,5 @@
 ﻿using Foundation;
 
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
-
 namespace TopSecret.Platforms.MacCatalyst
 {
 	[Register("AppDelegate")]

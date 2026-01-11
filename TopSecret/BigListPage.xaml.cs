@@ -1,9 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Security.Cryptography;
 
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
-
 using TopSecret.Core;
 using TopSecret.Core.Interfaces;
 
@@ -16,8 +13,6 @@ public partial class BigListPage : BasePage, INotifyPropertyChanged
 	private List<AccountRecord> _records = [];
 	private readonly IKeyboardHelper? _keyboardHelper;
 	private readonly IPasswordManager _passwordManager;
-
-	public new event PropertyChangedEventHandler? PropertyChanged;
 
 	public bool IsLoading
 	{
@@ -55,11 +50,6 @@ public partial class BigListPage : BasePage, INotifyPropertyChanged
 		_passwordManager = passwordManager;
 		_keyboardHelper = keyboardHelper;
 		BindingContext = this;
-	}
-
-	protected new void OnPropertyChanged(string propertyName)
-	{
-		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 
 	protected override async void OnAppearing()

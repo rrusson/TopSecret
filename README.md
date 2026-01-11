@@ -7,4 +7,4 @@ Notes:
 - I ported it from an app I made for my Windows Phone 8 (RIP).
 - Master password is set on first use (and can be updated).
 - Master password is never stored, only a hash.
-- After ten bad guesses, there's a deliberate, complete data wipe of [all]() password data.
+- After ten bad guesses there's a deliberate, complete data wipe of all password data.

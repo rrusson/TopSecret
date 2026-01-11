@@ -1,8 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
-
 using TopSecret.Core.Interfaces;
 
 namespace TopSecret;
@@ -10,12 +5,10 @@ namespace TopSecret;
 public partial class LoginPage : ContentPage
 {
 	private readonly ILoginHelper _loginHelper;
-	private readonly IMasterPasswordProvider _passwordManager;
 
-	public LoginPage(ILoginHelper loginHelper, IMasterPasswordProvider passwordManager)
+	public LoginPage(ILoginHelper loginHelper)
 	{
 		_loginHelper = loginHelper;
-		_passwordManager = passwordManager;
 
 		InitializeComponent();
 		Password.Focus();
