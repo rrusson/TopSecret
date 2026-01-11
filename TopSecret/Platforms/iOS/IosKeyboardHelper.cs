@@ -1,6 +1,6 @@
-﻿using TopSecret.Core.Interfaces;
+﻿using UIKit;
 
-using UIKit;
+using TopSecret.Core.Interfaces;
 
 namespace TopSecret.Platforms.iOS
 {

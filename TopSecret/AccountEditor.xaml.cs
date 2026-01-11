@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows.Input;
 
 using TopSecret.Core;
@@ -44,6 +45,7 @@ public partial class AccountEditor : BasePage
 
 	public AccountEditor(IPasswordManager passwordManager, IKillTimer killTimer) : base(killTimer)
 	{
+		InitializeComponent();
 		_passwordManager = passwordManager;
 
 		CloneCommand = new Command(async () => await CloneRecord());

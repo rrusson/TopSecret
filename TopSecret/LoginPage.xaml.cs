@@ -5,12 +5,10 @@ namespace TopSecret;
 public partial class LoginPage : ContentPage
 {
 	private readonly ILoginHelper _loginHelper;
-	private readonly IMasterPasswordProvider _passwordManager;
 
-	public LoginPage(ILoginHelper loginHelper, IMasterPasswordProvider passwordManager)
+	public LoginPage(ILoginHelper loginHelper)
 	{
 		_loginHelper = loginHelper;
-		_passwordManager = passwordManager;
 
 		InitializeComponent();
 		Password.Focus();

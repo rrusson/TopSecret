@@ -3,7 +3,7 @@ using System.Text;
 
 using TopSecret.Core.Interfaces;
 
-namespace TopSecret.Helpers
+namespace TopSecret.Core.Helpers
 {
 	public class CryptoHelper : ICryptoHelper
 	{
