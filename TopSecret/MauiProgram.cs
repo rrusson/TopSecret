@@ -39,6 +39,8 @@ namespace TopSecret
 			builder.Services.AddSingleton<IKeyboardHelper, Platforms.Android.AndroidKeyboardHelper>();
 #elif IOS
 			builder.Services.AddSingleton<IKeyboardHelper, Platforms.iOS.IosKeyboardHelper>();
+#else
+			builder.Services.AddSingleton<IKeyboardHelper, NoOpKeyboardHelper>();
 #endif
 
 #if DEBUG

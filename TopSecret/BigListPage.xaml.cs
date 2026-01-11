@@ -44,7 +44,11 @@ public partial class BigListPage : BasePage
 		}
 	}
 
-	public BigListPage(IPasswordManager passwordManager, IMasterPasswordProvider masterPasswordProvider, IKillTimer killTimer, IKeyboardHelper? keyboardHelper = null) : base(killTimer)
+	public BigListPage(
+		IPasswordManager passwordManager, 
+		IMasterPasswordProvider masterPasswordProvider, 
+		IKillTimer killTimer, 
+		IKeyboardHelper? keyboardHelper) : base(killTimer)
 	{
 		InitializeComponent();
 		_passwordManager = passwordManager;
