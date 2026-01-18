@@ -8,7 +8,22 @@
 	<Grid>
 		<!-- Main Content -->
 		<VerticalStackLayout>
-			<ScrollView VerticalOptions="Start">
+            <Label
+				x:Name="PasswordLabel"
+				IsVisible="False"
+				Text="New Master Password" />
+            <Entry
+				x:Name="MasterPw"
+				IsPassword="True"
+				IsVisible="False"
+				Placeholder="Password" />
+            <Button
+				x:Name="MasterPwChangeButton"
+				Clicked="MasterPwChangeButtonClick"
+				IsVisible="False"
+				MaximumWidthRequest="200"
+				Text="Engage!" />
+            <ScrollView VerticalOptions="Start">
 				<ListView
 					Margin="10,5,10,5"
 					HeightRequest="500"
@@ -106,21 +121,6 @@
 					SemanticProperties.Hint="Game Over"
 					Text="Quit" />
 			</HorizontalStackLayout>
-			<Label
-				x:Name="PasswordLabel"
-				IsVisible="False"
-				Text="New Master Password" />
-			<Entry
-				x:Name="MasterPw"
-				IsPassword="True"
-				IsVisible="False"
-				Placeholder="Password" />
-			<Button
-				x:Name="MasterPwChangeButton"
-				Clicked="MasterPwChangeButtonClick"
-				IsVisible="False"
-				MaximumWidthRequest="200"
-				Text="Engage!" />
 		</VerticalStackLayout>
 
 		<!-- Loading Overlay -->

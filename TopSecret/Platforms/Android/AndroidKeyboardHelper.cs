@@ -1,4 +1,6 @@
-﻿using Android.Content;
+﻿using Android.App;
+using Android.Content;
+using Android.OS;
 using Android.Views.InputMethods;
 
 using TopSecret.Core.Interfaces;
@@ -9,13 +11,12 @@ namespace TopSecret.Platforms.Android
 	{
 		public void HideKeyboard()
 		{
-			var context = Platform.AppContext;
-			var inputMethodManager = context.GetSystemService(Context.InputMethodService) as InputMethodManager;
+			Context context = Platform.AppContext;
 
-			if (inputMethodManager != null)
+			if (context.GetSystemService(Context.InputMethodService) is InputMethodManager inputMethodManager)
 			{
-				var activity = Platform.CurrentActivity;
-				var token = activity?.CurrentFocus?.WindowToken;
+				Activity? activity = Platform.CurrentActivity;
+				IBinder? token = activity?.CurrentFocus?.WindowToken;
 
 				inputMethodManager.HideSoftInputFromWindow(token, HideSoftInputFlags.None);
 				activity?.Window?.DecorView.ClearFocus();
