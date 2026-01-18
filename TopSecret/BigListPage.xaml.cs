@@ -117,7 +117,7 @@ public partial class BigListPage : BasePage
 		}
 	}
 
-	private void OnQuitClicked(object sender, EventArgs e)
+	private static void OnQuitClicked(object sender, EventArgs e)
 	{
 		Application.Current?.Quit();
 	}
@@ -135,6 +135,7 @@ public partial class BigListPage : BasePage
 			return;
 		}
 
+		_keyboardHelper?.HideKeyboard();
 		await UpdateMasterPassword().ConfigureAwait(true);
 	}
 
@@ -151,6 +152,7 @@ public partial class BigListPage : BasePage
 		try
 		{
 			await _passwordManager.ChangeMasterPasswordAsync(MasterPw.Text).ConfigureAwait(true);
+
 			ToggleMasterPasswordVisibility(false);
 			return;
 		}
