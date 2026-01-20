@@ -3,7 +3,7 @@ using System.Text;
 
 using TopSecret.Core.Interfaces;
 
-namespace TopSecret.Core.Helpers
+namespace TopSecret.Core
 {
 	public class CryptoHelper : ICryptoHelper
 	{
@@ -17,7 +17,7 @@ namespace TopSecret.Core.Helpers
 			ArgumentNullException.ThrowIfNull(password);
 
 			_masterPw = password;
-			_deviceId = GetDeviceId() ?? string.Empty;
+			_deviceId = DeviceId ?? string.Empty;
 		}
 
 		public string Encrypt(string plainText)
@@ -84,29 +84,27 @@ namespace TopSecret.Core.Helpers
 		/// Get unique device ID to make it more difficult to crack the encryption
 		/// </summary>
 		/// <returns>Unique DeviceId</returns>
-		private static string? GetDeviceId()
-		{
+		private static string? DeviceId =>
 #if ANDROID
-	return Android.Provider.Settings.Secure.GetString(Platform.CurrentActivity?.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
+	Android.Provider.Settings.Secure.GetString(Platform.CurrentActivity?.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
 #elif IOS
-			return UIKit.UIDevice.CurrentDevice.IdentifierForVendor.ToString();
+	UIKit.UIDevice.CurrentDevice.IdentifierForVendor.ToString();
 #elif WINDOWS
-	return Windows.System.Profile.SystemIdentification.GetSystemIdForPublisher().Id.ToString();
+	Windows.System.Profile.SystemIdentification.GetSystemIdForPublisher().Id.ToString();
 #elif WINDOWS_UWP
-	return Windows.System.Profile.SystemIdentification.GetSystemIdForPublisher().Id.ToString();
+	Windows.System.Profile.SystemIdentification.GetSystemIdForPublisher().Id.ToString();
 #elif LINUX
-	return Environment.MachineName;
+	Environment.MachineName;
 #elif MACOS
-	return NSProcessInfo.ProcessInfo.HostName;
+	NSProcessInfo.ProcessInfo.HostName;
 #elif TIZEN
-	return Tizen.System.Information.DeviceId;
+	Tizen.System.Information.DeviceId;
 #elif TVOS
-	return UIDevice.CurrentDevice.IdentifierForVendor.ToString();
+	UIDevice.CurrentDevice.IdentifierForVendor.ToString();
 #elif WATCHOS
-	return WKInterfaceDevice.CurrentDevice.IdentifierForVendor.ToString();
+	WKInterfaceDevice.CurrentDevice.IdentifierForVendor.ToString();
 #else
-	return "UNKNOWN";
+	"UNKNOWN";
 #endif
-		}
 	}
 }

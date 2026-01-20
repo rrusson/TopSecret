@@ -8,6 +8,7 @@ namespace TopSecret;
 
 public partial class AccountEditor : BasePage
 {
+	private const string ErrorTitle = "ERROR";
 	private bool _isExistingRecord;
 	private AccountRecord? _record;
 	private readonly IPasswordManager _passwordManager;
@@ -43,6 +44,10 @@ public partial class AccountEditor : BasePage
 
 	public ICommand? SaveCommand { get; set; }
 
+	public ICommand? CopyPasswordCommand { get; set; }
+
+	public ICommand? OpenUrlCommand { get; set; }
+
 	public AccountEditor(IPasswordManager passwordManager, IKillTimer killTimer) : base(killTimer)
 	{
 		InitializeComponent();
@@ -52,6 +57,8 @@ public partial class AccountEditor : BasePage
 		DeleteCommand = new Command(async () => await DeleteRecord());
 		SaveCommand = new Command(async () => await SaveRecord());
 		ListCommand = new Command(async () => await Navigation.PopAsync());
+		CopyPasswordCommand = new Command(async () => await CopyTextToBuffer(Record?.Password));
+		OpenUrlCommand = new Command(async () => await OpenUrl());
 		BindingContext = this;
 	}
 
@@ -87,7 +94,38 @@ public partial class AccountEditor : BasePage
 		}
 		catch (Exception ex)
 		{
-			await DisplayAlert("ERROR", ex.Message, "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, ex.Message, "OK").ConfigureAwait(true);
+		}
+	}
+
+	private async Task CopyTextToBuffer(string? text)
+	{
+		if (Record != null && !string.IsNullOrEmpty(text))
+		{
+			await Clipboard.Default.SetTextAsync(text).ConfigureAwait(true);
+		}
+	}
+
+	private async Task OpenUrl()
+	{
+		if (string.IsNullOrWhiteSpace(Record?.Url))
+		{
+			return;
+		}
+
+		string url = Record.Url.Trim();
+		if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+		{
+			url = "http://" + url;
+		}
+
+		try
+		{
+			await Launcher.Default.OpenAsync(new Uri(url)).ConfigureAwait(true);
+		}
+		catch (Exception)
+		{
+			// Ignore errors
 		}
 	}
 
@@ -98,7 +136,7 @@ public partial class AccountEditor : BasePage
 			|| string.IsNullOrWhiteSpace(Record.UserName)
 			|| string.IsNullOrWhiteSpace(Record.Password))
 		{
-			await DisplayAlert("ERROR", "Account Name, User Name, and Password are required.", "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, "Account Name, User Name, and Password are required.", "OK").ConfigureAwait(true);
 			return;
 		}
 
@@ -116,15 +154,15 @@ public partial class AccountEditor : BasePage
 				return;
 			}
 
-			await DisplayAlert("ERROR", "Record not saved, please try again.", "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, "Record not saved, please try again.", "OK").ConfigureAwait(true);
 		}
 		catch (Exception ex)
 		{
-			await DisplayAlert("ERROR", ex.Message, "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, ex.Message, "OK").ConfigureAwait(true);
 		}
 	}
 
-	private string SanitizeInput(string? input)
+	private static string SanitizeInput(string? input)
 	{
 		if (string.IsNullOrWhiteSpace(input))
 		{
