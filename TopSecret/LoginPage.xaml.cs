@@ -14,6 +14,16 @@ public partial class LoginPage : ContentPage
 		Password.Focus();
 	}
 
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+
+		if (!string.IsNullOrEmpty(App.MasterPassword))
+		{
+			await ForwardToList().ConfigureAwait(true);
+		}
+	}
+
 	/// <summary>
 	/// Check password and navigate to main page if correct
 	/// </summary>
@@ -46,20 +56,27 @@ public partial class LoginPage : ContentPage
 
 		ErrorMessage.Text = string.Empty;
 
-		// Get the BigListPage from the service provider
+		// Forward user to the BigListPage
+		await ForwardToList().ConfigureAwait(true);
+
+		return true;
+	}
+
+	private async Task ForwardToList()
+	{
+		// Get the BigListPage from the service provider and forward to it
 		var services = Application.Current?.Handler?.MauiContext?.Services;
+
 		if (services != null)
 		{
 			var bigListPage = services.GetService<BigListPage>();
 			if (bigListPage != null)
 			{
+				// Remove the login page from the Navigation stack so back button doesn't return to it
+				Navigation.RemovePage(this);
 				await Navigation.PushAsync(bigListPage).ConfigureAwait(true);
 			}
 		}
-
-		// Remove the login page from the Navigation stack so back button doesn't return to it
-		Navigation.RemovePage(this);
-		return true;
 	}
 
 	/// <summary>
@@ -69,11 +86,10 @@ public partial class LoginPage : ContentPage
 	{
 		string? badAttempts = await SecureStorage.Default.GetAsync(nameof(badAttempts)).ConfigureAwait(true) ?? "0";
 
-		if (!int.TryParse(badAttempts, out int attempts) || attempts > 10)
+		if (!int.TryParse(badAttempts, out int attempts) || attempts > 9)
 		{
-			// Too many failed attempts, erase the entire database (Nuclear Option)
-			SecureStorage.Default.RemoveAll();
 			ErrorMessage.Text = "GAME OVER. All data removed.";
+			SecureStorage.Default.RemoveAll();
 			return;
 		}
 

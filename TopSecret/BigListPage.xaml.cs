@@ -8,6 +8,7 @@ namespace TopSecret;
 
 public partial class BigListPage : BasePage
 {
+	private const string ErrorTitle = "ERROR";
 	private bool _isLoading;
 	private bool _isMasterPasswordVisible;
 	private List<AccountRecord> _records = [];
@@ -46,7 +47,6 @@ public partial class BigListPage : BasePage
 
 	public BigListPage(
 		IPasswordManager passwordManager, 
-		IMasterPasswordProvider masterPasswordProvider, 
 		IKillTimer killTimer, 
 		IKeyboardHelper? keyboardHelper) : base(killTimer)
 	{
@@ -78,7 +78,7 @@ public partial class BigListPage : BasePage
 		catch (Exception ex)
 		{
 			Console.WriteLine($"Error loading account data: {ex.Message}");
-			await DisplayAlert("ERROR", "Unable to load account data. Please try again or reinstall.", "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, "Unable to load account data. Please try again or reinstall.", "OK").ConfigureAwait(true);
 		}
 
 		IsLoading = false;
@@ -143,7 +143,7 @@ public partial class BigListPage : BasePage
 	{
 		if (string.IsNullOrWhiteSpace(MasterPw.Text))
 		{
-			await DisplayAlert("ERROR", "Master Password can't be empty.", "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, "Master Password can't be empty.", "OK").ConfigureAwait(true);
 		}
 
 		// Set the new app master password that's used by StorageHelper to encrypt/decrypt all records
@@ -158,15 +158,15 @@ public partial class BigListPage : BasePage
 		}
 		catch (InvalidOperationException invEx)
 		{
-			await DisplayAlert("ERROR", invEx.Message, "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, invEx.Message, "OK").ConfigureAwait(true);
 		}
 		catch (CryptographicException cryptoEx)
 		{
-			await DisplayAlert("ERROR", cryptoEx.Message, "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, cryptoEx.Message, "OK").ConfigureAwait(true);
 		}
 		catch (Exception)
 		{
-			await DisplayAlert("ERROR", "Oops. The encrypted data didn't save correctly. Please try again.", "OK").ConfigureAwait(true);
+			await DisplayAlert(ErrorTitle, "Oops. The encrypted data didn't save correctly. Please try again.", "OK").ConfigureAwait(true);
 		}
 
 		ToggleMasterPasswordVisibility(true);   // Show the password input in case of error so user can try again

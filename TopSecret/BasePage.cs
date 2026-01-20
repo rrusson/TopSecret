@@ -5,14 +5,9 @@ namespace TopSecret;
 /// <summary>
 /// A base class for all pages in the application. Manages the kill timer.
 /// </summary>
-public class BasePage : ContentPage
+public partial class BasePage(IKillTimer killTimer) : ContentPage
 {
-	private readonly IKillTimer? _killTimer;
-
-	public BasePage(IKillTimer killTimer)
-	{
-		_killTimer = killTimer;
-	}
+	private readonly IKillTimer? _killTimer = killTimer;
 
 	protected override void OnAppearing()
 	{

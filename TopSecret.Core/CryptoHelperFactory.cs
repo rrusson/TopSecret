@@ -1,6 +1,6 @@
 using TopSecret.Core.Interfaces;
 
-namespace TopSecret.Core.Helpers
+namespace TopSecret.Core
 {
 	public class CryptoHelperFactory : ICryptoHelperFactory
 	{

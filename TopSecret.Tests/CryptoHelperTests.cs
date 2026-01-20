@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-using TopSecret.Core.Helpers;
+using TopSecret.Core;
 
 namespace TopSecret.Tests
 {
@@ -148,7 +148,7 @@ namespace TopSecret.Tests
 			var encrypted = cryptoHelper.Encrypt(TestPlainText);
 			
 			// Corrupt the encrypted data by modifying a character
-			var corruptedData = encrypted.Substring(0, encrypted.Length - 1) + "X";
+			var corruptedData = string.Concat(encrypted.AsSpan(0, encrypted.Length - 1), "X");
 
 			// Act & Assert
 			Assert.Throws<CryptographicException>(() => cryptoHelper.Decrypt(corruptedData));

@@ -20,12 +20,18 @@
 		<Entry Placeholder="User Name" Text="{Binding Record.UserName, Mode=TwoWay}" />
 
 		<StackLayout Orientation="Horizontal">
+			<StackLayout.GestureRecognizers>
+				<TapGestureRecognizer Command="{Binding CopyPasswordCommand}" />
+			</StackLayout.GestureRecognizers>
 			<Label Text="&#xf084;" FontFamily="FontAwesome" />
 			<Label Text=" Password" />
 		</StackLayout>
 		<Entry Placeholder="Password" Text="{Binding Record.Password, Mode=TwoWay}" />
 
 		<StackLayout Orientation="Horizontal">
+			<StackLayout.GestureRecognizers>
+				<TapGestureRecognizer Command="{Binding OpenUrlCommand}" />
+			</StackLayout.GestureRecognizers>
 			<Label Text="&#xf0ac;" FontFamily="FontAwesome" />
 			<Label Text=" URL" />
 		</StackLayout>

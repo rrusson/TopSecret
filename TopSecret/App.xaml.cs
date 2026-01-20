@@ -67,18 +67,18 @@ namespace TopSecret
 			killTimer?.Reset();
 		}
 
-		private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+		private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
 			ShowException(e.ExceptionObject as Exception);
 		}
 
-		private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+		private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
 		{
 			ShowException(e.Exception);
 			e.SetObserved();
 		}
 
-		private void ShowException(Exception? ex)
+		private static void ShowException(Exception? ex)
 		{
 			if (ex == null)
 			{
